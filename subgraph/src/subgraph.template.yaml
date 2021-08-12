@@ -1,0 +1,39 @@
+specVersion: 0.0.2
+schema:
+  file: ./src/schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: YourContract
+    network: localhost
+    source:
+      address: "{{localhost_YourContractAddress}}"
+      abi: YourContract
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - fraktalNFTs
+        - users
+        - listItems
+        - fraktionsBalance
+      abis:
+        - name: YourContract
+          file: ./abis/goerli_YourContract.json
+      eventHandlers:
+        - event: Bought(address,address,uint256,uint256)
+          handler: handleBought
+        - event: ItemListed(address,uint256,uint256,uint256,string)
+          handler: handleItemListed
+        - event: ItemPriceUpdated(address,uint256,uint256)
+          handler: handleItemPriceUpdated
+        - event: Minted(address,string,uint256)
+          handler: handleMinted
+        - event: TokenTransfered(address,address,uint256,uint256,uint256)
+          handler: handleTokenTransfered
+#
+  # event LockedSharesForTransfer(address shareOwner, address to, uint numShares);
+  # event UnlockedSharesForTransfer(address shareOwner, address to, uint numShares);
+
+      file: ./src/mapping.ts

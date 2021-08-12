@@ -1,0 +1,34 @@
+type FraktalNFT @entity {
+  id: ID!
+  marketId: BigInt!
+  hash: String!
+  creator: User!
+  owner: User!
+  createdAt: BigInt!
+  fraktions: [FraktionsBalance!]! @derivedFrom(field: "nft")
+  transactionHash: String!
+}
+
+type ListItem @entity {
+  id: ID!
+  seller: User!
+  fraktal: FraktalNFT!
+  balance: BigInt!
+  price: BigInt!
+  amount: BigInt!
+  type: String!
+}
+
+type FraktionsBalance @entity {
+  id: ID!
+  nft: FraktalNFT!
+  owner: User!
+  amount: BigInt!
+}
+
+type User @entity {
+  id: ID!
+  balance: BigInt!
+  created: [FraktalNFT!] @derivedFrom(field: "creator")
+  fraktals: [FraktionsBalance!] @derivedFrom(field: "owner")
+}
