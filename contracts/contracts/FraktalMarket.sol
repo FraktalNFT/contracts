@@ -2,7 +2,8 @@ pragma solidity >=0.8.0 <0.9.0;
 //SPDX-License-Identifier: UNLICENSED
 
 import './FraktalNFT.sol';
-/* import "@openzeppelin/contracts/token/ERC721/ERC721.sol"; */
+import 'hardhat/console.sol';
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
@@ -13,7 +14,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     address public Fraktalimplementation;
-    /* address public PaymentSplitterImplementation;//  test this.. send it to FraktalNft */
+    address public zeroAddress;
     uint256 public fee;
     uint256 private feesAccrued;
 
@@ -23,21 +24,23 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       uint256 numberOfShares;
       string typeList;
     }
-    mapping (uint256 => address) public creators;
     EnumerableMap.UintToAddressMap private fraktalNFTs;
-    mapping (address => uint256) public sellersBalance;
     mapping(uint256=> mapping(address => Listing)) listings;
+    mapping (uint256 => address) public creators;
+    mapping (address => uint256) public sellersBalance;
+    mapping (address => address) public lockedERC721s;
+    mapping (address => uint) public lockedERC721indexes;
 
     event Minted(address creator,string urlIpfs,address tokenAddress,uint nftId);
     event Bought(address buyer,address seller, uint tokenId, uint256 numberOfShares);
     event FeeUpdated(uint256 newFee);
     event ItemListed(address owner, uint256 tokenId, uint256 price, uint256 amountOfShares, string typeList);
     event ItemPriceUpdated(address owner, uint256 tokenId, uint256 newPrice);
-
+    event ERC721Locked(address locker, address tokenAddress, address fraktal, uint256 tokenId);
     constructor(address _implementation) {
         Fraktalimplementation = _implementation;
-        /* PaymentSplitterImplementation = _paymentSplitterImplementation; */
         fee = 1;
+        zeroAddress = address(0);
     }
 
 // Admin Functions
@@ -82,8 +85,8 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       require(listing.numberOfShares >= _numberOfShares, 'Not enough Fraktions on sale');
       uint256 buyPrice = (listing.price * _numberOfShares);
       uint256 totalFees = buyPrice * fee / 100;
-      uint256 totalPrice = buyPrice + totalFees;
-      require(msg.value > totalPrice, "FraktalMarket: insufficient funds");
+      uint256 totalForSeller = buyPrice - totalFees;
+      require(msg.value > buyPrice, "FraktalMarket: insufficient funds");
       require(
         listing.numberOfShares >= _numberOfShares,
         "FraktalMarket: requested shares amount exceeds balance"
@@ -92,8 +95,8 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
 //      require(FraktalNFT(fraktalNFTs.get(_tokenId)).balanceOf(from,1) >= _numberOfShares, "Owner has not enough shares to sell");
       listing.numberOfShares = listing.numberOfShares - _numberOfShares;
       FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this), _msgSender(), 1, _numberOfShares,'');
-      feesAccrued += msg.value - buyPrice;
-      sellersBalance[from] += buyPrice;
+      feesAccrued += msg.value - totalForSeller;
+      sellersBalance[from] += totalForSeller;
       emit Bought(_msgSender(), from, _tokenId, _numberOfShares);
     }
 
@@ -104,7 +107,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this),_msgSender(),1,10000,'');
     }
     function defraktionalize(uint256 _tokenId) public {
-      //
       FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(_msgSender(), address(this),1,10000,'');
       FraktalNFT(fraktalNFTs.get(_tokenId)).lockSharesTransfer(10000, _msgSender());
       FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this), _msgSender(), 0, 1, '');
@@ -117,14 +119,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       uint256 _numberOfShares,
       string memory _type
     ) external returns (bool) {
-// old version
-//      require(FraktalNFT(fraktalNFTs[_tokenId]).balanceOf(address(this), 0)==1, 'You need to put the nft in escrow to list the fraktals');
-//      require(FraktalNFT(fraktalNFTs[_tokenId]).balanceOf(_msgSender(),1)-FraktalNFT(fraktalNFTs[_tokenId]).getLocked(_msgSender()) >=_numberOfShares, 'You dont have enough fraktals');
-
-// TODO
-// open an escrow for the nft and list the amount of fraktions desired, send the rest to the owner
         FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(_msgSender(),address(this),1,_numberOfShares,'');
-
         Listing memory listing =
         Listing({
           tokenId: _tokenId,
@@ -137,17 +132,34 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       return true;
     }
 
-    function claimNft(uint _tokenId) external {
-      require(FraktalNFT(fraktalNFTs.get(_tokenId)).balanceOf(address(this), 0) == 1, 'This item is not for sale');
-      FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(_msgSender(), address(this),0,1,'');
+    // make it also for ERC1155
+    function claimERC721(uint _tokenId) external {
+      address fraktalAddress = fraktalNFTs.get(_tokenId);
+      address collateralNft = lockedERC721s[fraktalAddress];
+      uint256 index = lockedERC721indexes[collateralNft];
+      address operator = _msgSender();
+      console.log(
+          'Address whitdrawing ERC721: %s and index: %s and burning: %s',
+          collateralNft,
+          index,
+          fraktalAddress
+      );
+      console.log('a call made by %s', operator);
+      ERC721Upgradeable(collateralNft).transferFrom(address(this), _msgSender(), index);
+      FraktalNFT(fraktalAddress).lockSharesTransfer(10000, address(this));
+      FraktalNFT(fraktalAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
+      fraktalNFTs.set(_tokenId, zeroAddress);
     }
-
-    /* function importERC721(address _token) external returns (address _clone) { */
-    // grab metadata for the token
-    // makes the transfer of the token to the contract custody
-    /* ERC721.transferFrom(_msgSender(), address(this), _token); */
-        /* mint(url copied) */
-        /* } */
+    function importERC721(address _tokenAddress, uint256 _tokenId) external returns (address _clone) {
+      string memory uri = ERC721Upgradeable(_tokenAddress).tokenURI(_tokenId);
+      ERC721Upgradeable(_tokenAddress).transferFrom(_msgSender(), address(this), _tokenId);
+      _clone = this.mint(uri);
+      lockedERC721s[_clone] = _tokenAddress;
+      lockedERC721indexes[_tokenAddress] = _tokenId;
+      uint256 index = fraktalNFTs.length() - 1 ;
+      FraktalNFT(fraktalNFTs.get(index)).safeTransferFrom(address(this), _msgSender(), 1, 10000, '');
+      emit ERC721Locked(_msgSender(), _tokenAddress, _clone, _tokenId);
+    }
 
     function updatePrice(uint256 _tokenId, uint256 _newPrice) external {
       Listing storage listing = listings[_tokenId][_msgSender()];
@@ -182,6 +194,9 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
     }
     function getSellerBalance(address _who) public view returns(uint256){
       return(sellersBalance[_who]);
+    }
+    function getERC721Collateral(address _tokenId) public view returns(address){
+      return(lockedERC721s[_tokenId]);
     }
 
 }

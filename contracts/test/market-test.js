@@ -16,6 +16,20 @@ const awaitTokenAddress = async tx => {
   );
   return decodedLog.tokenAddress;
 };
+const awaitERC721TokenAddress = async tx => {
+  const receipt = await tx.wait();
+  const abi = new ethers.utils.Interface(['event NewToken(address token)']);
+  const eventFragment = abi.events[Object.keys(abi.events)[0]];
+  const eventTopic = abi.getEventTopic(eventFragment);
+  const event = receipt.logs.find(e => e.topics[0] === eventTopic);
+  if (!event) return '';
+  const decodedLog = abi.decodeEventLog(
+    eventFragment,
+    event.data,
+    event.topics,
+  );
+  return decodedLog.token;
+};
 const emptyData = '0x000000000000000000000000000000000000dEaD';
 const testUri = "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco";
 describe("FraktalMarket", function () {
@@ -24,6 +38,10 @@ describe("FraktalMarket", function () {
   let Token1;
   let Token2;
   let Token3;
+  let erc721Factory;
+  let ERC721LogicContract;
+  let ERC721FactoryContract;
+  let TokenERC721;
   let PaymentSplitterLogicContract;
   let PaymentSplitter1;
   let owner;
@@ -43,9 +61,10 @@ describe("FraktalMarket", function () {
     // console.log('qty', parseFloat(qty));
     // console.log('fee',fee,'%');
     const toPayWei = priceN * parseFloat(qty);
-    const toPayWfees = toPayWei + (toPayWei * fee/100) + 0.0001; // extra for gas errors
+    // const toPayWfees = toPayWei + (toPayWei * fee/100) + 0.0001; // extra for gas errors
+    const toPayFixed = toPayWei + 0.0001;
     // console.log('total ',toPayWfees);
-    return utils.parseEther(toPayWfees.toString());
+    return utils.parseEther(toPayFixed.toString());
   }
 
 
@@ -389,9 +408,117 @@ describe("FraktalMarket", function () {
         expect(carolNftBalance).to.equal(ethers.BigNumber.from('1'));
       });
     });
+  });
+  describe('Importing NFTs', async function () {
+    it('should mint an ERC721 and have the correct balance after', async function () {
+      console.log('Carol mints an ERC721');
+      ERC721LogicContract = await ethers.getContractFactory("TestTokenUpgradeable");
+      const erc721Contract = await ERC721LogicContract.deploy();
+      await erc721Contract.deployed();
+      const ERC721FactoryContract = await ethers.getContractFactory("TestTokenFactory");
+      erc721Factory = await ERC721FactoryContract.deploy(erc721Contract.address);
+      await erc721Factory.deployed();
+      console.log("ERC721 factory deployed to:", erc721Factory.address);
+      let mintERC721Tx = await erc721Factory.connect(carol).createTestToken('carol NFT', 'CNFT');
+      const nftAddress = await awaitERC721TokenAddress(mintERC721Tx);
 
-    // aDD!!
-    // lock other NFT's (ERC721 + ERC1155)
-    // buy out function
+      TokenERC721 = ERC721LogicContract.attach(nftAddress);
+      console.log(
+        `Deployed a new ERC721 contract at: ${TokenERC721.address}`,
+      );
+      await TokenERC721.connect(carol).mint();
+      let carolERC721Balance = await TokenERC721.balanceOf(carol.address);
+      console.log('carol balanceof ',carolERC721Balance);
+      expect(carolERC721Balance).to.equal(ethers.BigNumber.from('1'));
+      await TokenERC721.connect(carol).approve(market.address, 1);
+      let tokenERC721owner = await TokenERC721.ownerOf(1);
+      console.log('owner of ERC721 tokenId 1 ',tokenERC721owner);
+      expect(tokenERC721owner).to.equal(carol.address);
+    });
+    it('Should allow to lock ERC721 tokens to the FraktalMarket.', async function () {
+      console.log('Carol imports its ERC721');
+      let importTx = await market.connect(carol).importERC721(TokenERC721.address, 1);
+      tokenERC721owner = await TokenERC721.ownerOf(1);
+      expect(tokenERC721owner).to.equal(market.address);
+      carolERC721Balance = await TokenERC721.balanceOf(carol.address);
+      expect(carolERC721Balance).to.equal(ethers.BigNumber.from('0'));
+      tokenERC721owner = await TokenERC721.ownerOf(1);
+      console.log('owner of ERC721 tokenId 1 ',tokenERC721owner);
+      const importTokenAddress = await awaitTokenAddress(importTx);
+      Token3 = TokenLogicContract.attach(importTokenAddress);
+      console.log(
+        `Deployed a new ERC1155 FraktalNFT at: ${Token3.address}`,
+      );
+      const importTokenUri = await Token3.uri(0);
+      const erc721uri = await TokenERC721.tokenURI(1);
+      expect(importTokenUri).to.equal(erc721uri);
+      let carolImportBalance = await Token3.balanceOfBatch([carol.address,carol.address], [0,1]);
+      expect(carolImportBalance[0]).to.equal(ethers.BigNumber.from("0"));
+      expect(carolImportBalance[1]).to.equal(ethers.BigNumber.from("10000"));
+      let marketBalanceT3 = await Token3.balanceOfBatch([market.address,market.address], [0,1]);
+      expect(marketBalanceT3[0]).to.equal(ethers.BigNumber.from("1"));
+      expect(marketBalanceT3[1]).to.equal(ethers.BigNumber.from("0"));
+      let collateralAddress = await market.getERC721Collateral(Token3.address);
+      expect(collateralAddress).to.equal(TokenERC721.address);
+    });
+    it('Should defraktionalize', async function () {
+      console.log('Carol defraktionalize its fraktions');
+      await market.connect(carol).defraktionalize(2);
+      marketBalanceT3 = await Token3.balanceOfBatch([market.address, market.address], [0,1]);
+      let carolBalance = await Token3.balanceOfBatch([carol.address,carol.address], [0,1]);
+      expect(marketBalanceT3[0]).to.equal(ethers.BigNumber.from('0'));
+      expect(marketBalanceT3[1]).to.equal(ethers.BigNumber.from('10000'));
+      expect(carolBalance[0]).to.equal(ethers.BigNumber.from('1'));
+      expect(carolBalance[1]).to.equal(ethers.BigNumber.from('0'));
+    });
+    it('Should allow to whitdraw the locked nft', async function () {
+      console.log('Carol whitdraws its ERC721');
+      await market.connect(carol).claimERC721(2);
+      carolERC721Balance = await TokenERC721.balanceOf(carol.address);
+      let carolBalance = await Token3.balanceOfBatch([carol.address,carol.address], [0,1]);
+      expect(carolERC721Balance).to.equal(ethers.BigNumber.from('1'));
+      expect(carolBalance[1]).to.equal(ethers.BigNumber.from('0'));
+      expect(carolBalance[0]).to.equal(ethers.BigNumber.from('0'));
+    });
+    it('Should do the same but for ERC1155 tokens', async function () {
+      console.log('TODO!')
+    });
+  });
+  describe('Buy out function',async function () {
+    it('Should allow to make offers on NFTs', async function () {
+      console.log('Alice lists token1 again');
+      await market.connect(alice).listItem(0,item1price,100,'---');
+      marketBalanceT1 = await Token1.balanceOfBatch([market.address, market.address], [0,1]);
+      expect(marketBalanceT1[1]).to.equal(ethers.BigNumber.from('100'));
+      let bobEthBalance = await ethers.provider.getBalance(bob.address);
+      console.log('Bob has',utils.formatEther(bobEthBalance),' and offers 10 ETH');
+      let offerValue = utils.parseEther('10');
+      await Token1.connect(bob).makeOffer(offerValue, {value: offerValue});
+      let proposal = await Token1.getOffer(bob.address);
+      expect(proposal).to.equal(offerValue);
+      bobEthBalance = await ethers.provider.getBalance(bob.address);
+      console.log('Bob has',utils.formatEther(bobEthBalance),' and modifies to 100 ETH');
+      offerValue = utils.parseEther('100');
+      let offerValueModification = utils.parseEther('90');
+      await Token1.connect(bob).modifyOffer(bob.address, offerValue, {value: offerValueModification});
+      proposal = await Token1.getOffer(bob.address);
+      console.log('new price', utils.formatEther(proposal));
+      expect(proposal).to.equal(offerValue);
+      ////////////////////////////////////////////////////
+      bobEthBalance = await ethers.provider.getBalance(bob.address);
+      console.log('Bob has',utils.formatEther(bobEthBalance),' and modifies to 0 ETH');
+      offerValue = utils.parseEther('0');
+      await Token1.connect(bob).modifyOffer(bob.address, offerValue);
+      proposal = await Token1.getOffer(bob.address);
+      console.log('new price', utils.formatEther(proposal));
+      expect(proposal).to.equal(offerValue);
+      bobEthBalance = await ethers.provider.getBalance(bob.address);
+      console.log('Bob has',utils.formatEther(bobEthBalance),' and modifies to 50 ETH');
+      offerValue = utils.parseEther('50');
+      await Token1.connect(bob).modifyOffer(bob.address, offerValue, {value: offerValue});
+      proposal = await Token1.getOffer(bob.address);
+      console.log('new price', utils.formatEther(proposal));
+      expect(proposal).to.equal(offerValue);
+    });
   });
 });

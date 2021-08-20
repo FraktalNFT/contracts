@@ -5,30 +5,30 @@ pragma solidity ^0.8.0;
 import 'hardhat/console.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol';
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
-/* import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol'; */
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out functionality ;)
     using EnumerableMap for EnumerableMap.UintToAddressMap;
-    /* address public PaymentSplitterImplementation; */
-    uint256[] public subIds;
-    uint256[] public amounts;
-
-    // trying tracking payments
-    /* EnumerableMap.UintToAddressMap private revenues; */
-    // we need to track the owners of tokens
-    /* EnumerableMap.UintToAddressMap private owners;
-    mapping(address => uint) public ownerIndex;
-    mapping(address => uint) public ownerBalance; */
-
+    struct Proposal {
+      address offerer;
+      uint256 value;
+      uint voteCount; // 10k max
+    }
+    uint public percenteage; // % of owners that decide the sell out (is it changeable for each token?) add functions then!
     PaymentSplitter[] public revenues;
-    mapping (address => uint) public lockedShares; //private
+
+    /* Proposal[] public offers; */
+    mapping(address => Proposal) public offers;
+
+    mapping (address => uint) private lockedShares;
     mapping (address => uint) lockedToTotal;
 
     event LockedSharesForTransfer(address shareOwner, address to, uint numShares);
     event UnlockedSharesForTransfer(address shareOwner, address to, uint numShares);
     event TokenTransfered(address sender, address recipient, uint tokenId, uint256 numberOfShares);
     event NewRevenueAdded(address payer, uint256 amount);
+    event OfferMade(address offerer, uint256 value);
+    event OfferUpdated(address offerer,uint256 value);
 
     constructor() initializer {}
 
@@ -36,19 +36,74 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
         external
         initializer
     {
-        subIds = [0,1];
-        amounts = [1,10000];
+        percenteage = 60;
         __ERC1155_init(uri);
-//--------------
-        _mint(_creator, subIds[0], amounts[0], '');
-        _mint(_msgSender(), subIds[1], amounts[1], '');
-        /* uint256 index = owners.length();
-        ownerIndex[_msgSender()] = index;
-        owners.set(index, _msgSender());
-        ownerBalance[_msgSender()] = 10000; */
+        _mint(_creator, 0, 1, '');
+        _mint(_msgSender(), 1, 10000, '');
     }
-// Overrided functions
-////////////////////////////////
+
+// Specific Functions
+///////////////////////////
+    /* function voteOffer(uint _index) public {
+      Proposal storage prop = offers[_index];
+      prop.voteCount += this.balanceOf(_msgSender(), 1);
+      if (prop.voteCount > 100*percenteage) {
+        console.log('should fire buy out');
+      }
+    } */
+
+    function makeOffer(uint256 _value) public payable {
+      require(msg.value >= _value, 'you forgot to pay');
+      offers[_msgSender()] = Proposal({
+        offerer: _msgSender(),
+        value: _value,
+        voteCount: 0
+        });
+      /* .push(); */
+      emit OfferMade(_msgSender(), _value);
+    }
+    function modifyOffer(address _offerer, uint256 _value) public payable{
+      Proposal storage prop = offers[_offerer];
+      require(prop.offerer == _msgSender(), 'You are not the owner of this offer');
+      address payable offerer = payable(_msgSender());
+      if (_value > prop.value) {
+        require(msg.value >= _value - prop.value);
+      } else {
+        offerer.transfer(prop.value - _value);
+      }
+      prop.value = _value;
+      emit OfferUpdated(_offerer, _value);
+    }
+
+
+    function lockSharesTransfer(uint numShares, address _to) public {
+      require(balanceOf(_msgSender(), 1) - lockedShares[_msgSender()] >= numShares,"Not enough shares");
+      lockedShares[_msgSender()] += numShares;
+      lockedToTotal[_to] += numShares;
+      emit LockedSharesForTransfer(_msgSender(), _to, numShares);
+    }
+
+    function unlockSharesTransfer(uint numShares, address _to) public {
+      require(lockedShares[_msgSender()] >= numShares, 'You dont have locked');
+      lockedShares[_msgSender()] -= numShares;
+      lockedToTotal[_to] -= numShares;
+      emit UnlockedSharesForTransfer( _msgSender(), _to, numShares);
+    }
+
+    function createRevenuePayment(address[] memory _addresses, uint256[] memory _fraktions) public payable {
+      // should have a type? for buy out function to trigger the shares burn at payment (escrow?)
+      // improve this with upgradeable clones??
+      PaymentSplitter newRevenue = new PaymentSplitter(_addresses, _fraktions);
+      address paymentContract = address(newRevenue);
+      payable(paymentContract).transfer(msg.value);
+      revenues.push(newRevenue);
+      emit NewRevenueAdded(_msgSender(), msg.value);
+    }
+    function askRelease(uint256 _index, address payable _to) public {
+      revenues[_index].release(_to);
+    }
+    // Overrided functions
+    ////////////////////////////////
     function safeTransferFrom(
           address from,
           address to,
@@ -72,73 +127,10 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
               (balanceOf(from, tokenId) - lockedShares[from] >= amount),
                 "caller < unlocked shares."
             );
-            /* if(ownerBalance[to] == 0) {
-              uint256 index = owners.length();
-              owners.set(index, to);
-              ownerIndex[to] = index;
-            } */
-            /* if(ownerBalance[from] - amount == 0){
-              owners.remove(ownerIndex[from]);
-              delete ownerIndex[from];
-            } */
-            /* ownerBalance[to] += amount;
-            ownerBalance[from] -= amount; */
           }
           _safeTransferFrom(from, to, tokenId, amount, data);
           emit TokenTransfered(_msgSender(), to, tokenId, amount);
       }
-// Specific Functions
-///////////////////////////
-    function lockSharesTransfer(uint numShares, address _to) public {
-      require(balanceOf(_msgSender(), 1) - lockedShares[_msgSender()] >= numShares,"Not enough shares");
-      lockedShares[_msgSender()] += numShares;
-      lockedToTotal[_to] += numShares;
-      emit LockedSharesForTransfer(_msgSender(), _to, numShares);
-    }
-
-    function unlockSharesTransfer(uint numShares, address _to) public {
-      require(lockedShares[_msgSender()] >= numShares, 'You dont have locked');
-      lockedShares[_msgSender()] -= numShares;
-      lockedToTotal[_to] -= numShares;
-      emit UnlockedSharesForTransfer( _msgSender(), _to, numShares);
-    }
-
-    function createRevenuePayment(address[] memory _addresses, uint256[] memory _fraktions) public payable {
-      // improve this with upgradeable clones??
-      PaymentSplitter newRevenue = new PaymentSplitter(_addresses, _fraktions);
-      address paymentContract = address(newRevenue);
-      payable(paymentContract).transfer(msg.value);
-      revenues.push(newRevenue);
-      /* revenues[index].receive(msg.value); */
-      emit NewRevenueAdded(_msgSender(), msg.value);
-    }
-    function askRelease(uint256 _index, address payable _to) public {
-      revenues[_index].release(_to);
-    }
-
-    /* function payRevenue() public payable {
-       uint listMax = owners.length();
-       require(listMax > 1, 'Just one owner');
-       address[] memory listOfOwners = new address[](listMax);
-       uint256[] memory listOfBalances = new uint256[](listMax);
-       uint256 resultIndex = 0;
-       for (uint256 i = 1; i < listMax - 1 ; i++) {
-         (bool content,address account) = owners.tryGet(i);
-         if(content && ownerBalance[account] > 0) {
-             listOfOwners[resultIndex] = account;
-             listOfBalances[resultIndex] = ownerBalance[account];
-             resultIndex++;
-         }
-       }
-    }
-    */
-    /* PaymentSplitter newRev = new PaymentSplitter(listOfOwners, listOfBalances); */
-    /* revenues.push(newRev); */
-    /* This will be extremely expensive for large sets. It is recommended */
-    /* to do off chain */
-
-// should be added:
-// Offers and vote over (with gaining full accountability on win)
 
 // Getters
 ///////////////////////////
@@ -148,17 +140,7 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
     function getLockedTo(address _to) public view returns(uint256){
       return(lockedToTotal[_to]);
     }
-
-    /* function getOwnersAt(uint index) public view returns(uint256, address){
-      return (owners.at(index));
+    function getOffer(address offerer) public view returns(uint256){
+      return(offers[offerer].value);
     }
-    function getOwners(uint index) public view returns(address){
-      return (owners.get(index));
-    }
-    function getOwnersLength() public view returns(uint256){
-      return(owners.length());
-    }
-    function getOwnerIndex(address account) public view returns(uint256){
-      return(ownerIndex[account]);
-    } */
 }
