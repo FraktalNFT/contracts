@@ -124,7 +124,7 @@ describe("FraktalMarket", function () {
   });
   describe("Listing functions", async function () {
       it('Should get the fraktal in the market and return the fraktions', async function () {
-      console.log('Alice locks her NFT for listing');
+      console.log('Alice fraktionalize her NFT for listing');
       await market.connect(alice).fraktionalize(0);
       marketBalanceT1 = await Token1.balanceOfBatch([market.address, market.address], [0,1]);
       let aliceBalance = await Token1.balanceOfBatch([alice.address,alice.address], [0,1]);
@@ -176,10 +176,10 @@ describe("FraktalMarket", function () {
       console.log('Alice change price');
       await market.connect(alice).updatePrice(0, newPrice);
       expect( await market.getListingPrice(alice.address, 0)).to.equal(newPrice);
+      console.log('Carol tries to buy it at old price');
       await expect(
         market.connect(carol).buy(alice.address, 0, 10, {value: toPay(10,item1price)})
       ).to.be.revertedWith('FraktalMarket: insufficient funds');
-
       await market.connect(carol).buy(alice.address, 0, 3000, {value: toPay(3000, newPrice)});
       let carolFraktionsToken1 = await Token1.balanceOf(carol.address, 1);
       console.log('Carol has bought ',carolFraktionsToken1.toNumber(), 'fraktions of Token1 at the new price');
@@ -187,19 +187,19 @@ describe("FraktalMarket", function () {
     });
     it('Should allow the seller to rescue the eth', async function () {
       let aliceInitialEthBalance = await ethers.provider.getBalance(alice.address);
-      console.log('Alice has ', utils.formatEther(aliceInitialEthBalance));
+      console.log('Alice has ', utils.formatEther(aliceInitialEthBalance), 'ETH');
       // let totalInContract = await ethers.provider.getBalance(market.address);
       let aliceBalanceInContract = await market.getSellerBalance(alice.address);
-      console.log('Alice has a balance of ', utils.formatEther(aliceBalanceInContract));
+      console.log('Alice has a balance of ', utils.formatEther(aliceBalanceInContract), 'ETH');
       console.log('Alice retrieves its gains');
       await market.connect(alice).rescueEth();
       let aliceEndEthBalance = await ethers.provider.getBalance(alice.address);
-      console.log('Alice has now, ', utils.formatEther(aliceEndEthBalance));
+      console.log('Alice has now, ', utils.formatEther(aliceEndEthBalance), 'ETH');
       expect(aliceEndEthBalance).to.gt(aliceInitialEthBalance);
     });
     it('Should allow the admin to take the accrued fees', async function () {
       let totalInContract = await ethers.provider.getBalance(market.address);
-      console.log('The contract has now, ', utils.formatEther(totalInContract));
+      console.log('The contract has now, ', utils.formatEther(totalInContract), 'ETH');
       console.log('Owner whitdraw the accrued fees');
       let ownerInitialEth = await ethers.provider.getBalance(owner.address);
       await market.connect(owner).withdrawAccruedFees();
@@ -207,7 +207,7 @@ describe("FraktalMarket", function () {
       totalInContract = await ethers.provider.getBalance(market.address);
       let difference = ownerFinalEth.sub(ownerInitialEth);
       expect(difference).to.gt(ethers.BigNumber.from('0'));
-      console.log('Owner now has ',utils.formatEther(ownerFinalEth), ' and whitdrew ',utils.formatEther(difference), 'ETH');
+      console.log('Owner now has ',utils.formatEther(ownerFinalEth), 'ETH');
       console.log('now there is ',utils.formatEther(totalInContract),' in the contract');
       expect(totalInContract).to.equal(ethers.BigNumber.from('0')); // never gets to 0... ???
     });
@@ -227,17 +227,6 @@ describe("FraktalMarket", function () {
         market.connect(bob).buy(alice.address, 0, 10, {value: toPay(10, item1price)})
       ).to.be.revertedWith("There are no Fraktions in sale");
     });
-    // it('Should return the owners and amounts of token holders', async function () {
-      // payment splitter (include a map balance in each nft?)
-    //   let getLength = await Token1.getOwnersLength();
-    //   console.log('Total owners from enumerable Map.length()', getLength.toNumber());
-    //   // let getAliceIndex = await Token1.getOwnerIndex(alice.address);
-    //   // let getAliceData = await Token1.getOwnersAt(getAliceIndex);
-    //   // let getAliceAmount = await Token1.balanceOf(alice.address, 1);
-    //   // console.log('Alice  index ',getAliceData[0],'account: ',getAliceData[1], ' amount: ',getAliceAmount);
-    //   let tokenHoldersList = await Token1.connect(alice).payRevenue();
-    //   console.log('pay Revenue list: ',tokenHoldersList);
-    // });
     it('Should allow to create a Revenue stream to fraktion holders', async function () {
       console.log('Alice create Revenue Payment with 100 ETH');
       let aliceFraktions1 = await Token1.balanceOf(alice.address, 1);
@@ -256,17 +245,17 @@ describe("FraktalMarket", function () {
     });
     it('Should allow owners to retire its gains', async function () {
       let carolEthBalance = await ethers.provider.getBalance(carol.address);
-      console.log('Carol had 30% and has ',utils.formatEther(carolEthBalance));
+      console.log('Carol had 30% and has ',utils.formatEther(carolEthBalance), 'ETH');
       console.log('She asks for release');
       await Token1.connect(carol).askRelease(0, carol.address);
       carolEthBalance = await ethers.provider.getBalance(carol.address);
-      console.log('Carol has now ',utils.formatEther(carolEthBalance));
+      console.log('Carol has now ',utils.formatEther(carolEthBalance), 'ETH');
       let aliceEthBalance = await ethers.provider.getBalance(alice.address);
-      console.log('Alice had 60% and has ',utils.formatEther(aliceEthBalance));
+      console.log('Alice had 60% and has ',utils.formatEther(aliceEthBalance), 'ETH');
       console.log('Carol asks for Alice release');
       await Token1.connect(carol).askRelease(0, alice.address);
       aliceEthBalance = await ethers.provider.getBalance(alice.address);
-      console.log('Alice has now ',utils.formatEther(aliceEthBalance));
+      console.log('Alice has now ',utils.formatEther(aliceEthBalance), 'ETH');
     });
     describe("Other NFT functions", async function () {
       it("Should mint new fraktal", async function () {

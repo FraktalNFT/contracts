@@ -44,36 +44,14 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
 
 // Specific Functions
 ///////////////////////////
-    /* function voteOffer(uint _index) public {
-      Proposal storage prop = offers[_index];
+    /* function voteOffer(address _offerer) public {
+      Proposal storage prop = offers[_offerer];
       prop.voteCount += this.balanceOf(_msgSender(), 1);
       if (prop.voteCount > 100*percenteage) {
         console.log('should fire buy out');
       }
     } */
 
-    function makeOffer(uint256 _value) public payable {
-      require(msg.value >= _value, 'you forgot to pay');
-      offers[_msgSender()] = Proposal({
-        offerer: _msgSender(),
-        value: _value,
-        voteCount: 0
-        });
-      /* .push(); */
-      emit OfferMade(_msgSender(), _value);
-    }
-    function modifyOffer(address _offerer, uint256 _value) public payable{
-      Proposal storage prop = offers[_offerer];
-      require(prop.offerer == _msgSender(), 'You are not the owner of this offer');
-      address payable offerer = payable(_msgSender());
-      if (_value > prop.value) {
-        require(msg.value >= _value - prop.value);
-      } else {
-        offerer.transfer(prop.value - _value);
-      }
-      prop.value = _value;
-      emit OfferUpdated(_offerer, _value);
-    }
 
 
     function lockSharesTransfer(uint numShares, address _to) public {
@@ -90,9 +68,28 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
       emit UnlockedSharesForTransfer( _msgSender(), _to, numShares);
     }
 
+    function makeOffer(uint256 _value) public payable {
+      require(msg.value >= _value, 'you forgot to pay');
+      offers[_msgSender()] = Proposal({
+        offerer: _msgSender(),
+        value: _value,
+        voteCount: 0
+        });
+        emit OfferMade(_msgSender(), _value);
+      }
+    function modifyOffer(address _offerer, uint256 _value) public payable{
+      Proposal storage prop = offers[_offerer];
+      require(prop.offerer == _msgSender(), 'You are not the owner of this offer');
+      address payable offerer = payable(_msgSender());
+      if (_value > prop.value) {
+        require(msg.value >= _value - prop.value);
+        } else {
+          offerer.transfer(prop.value - _value);
+        }
+        prop.value = _value;
+        emit OfferUpdated(_offerer, _value);
+      }
     function createRevenuePayment(address[] memory _addresses, uint256[] memory _fraktions) public payable {
-      // should have a type? for buy out function to trigger the shares burn at payment (escrow?)
-      // improve this with upgradeable clones??
       PaymentSplitter newRevenue = new PaymentSplitter(_addresses, _fraktions);
       address paymentContract = address(newRevenue);
       payable(paymentContract).transfer(msg.value);
