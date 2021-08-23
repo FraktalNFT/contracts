@@ -135,7 +135,7 @@ describe("FraktalMarket", function () {
     });
     it('Should allow to list the fraktions', async function () {
       console.log('Alice list the item');
-      await market.connect(alice).listItem(0,item1price,5000,'fixed');
+      await market.connect(alice).listItem(0,item1price,5000);
       marketBalanceT1 = await Token1.balanceOfBatch([market.address, market.address], [0,1]);
       aliceBalance = await Token1.balanceOfBatch([alice.address,alice.address], [0,1]);
       expect(marketBalanceT1[1]).to.equal(ethers.BigNumber.from('5000'));
@@ -152,13 +152,13 @@ describe("FraktalMarket", function () {
     it('Should allow to buy fraktions', async function () {
       console.log('testing +max of listed');
       await expect(
-        market.connect(bob).buy(alice.address, 0, 6001, {value: toPay(6001,item1price)})
+        market.connect(bob).buyFraktions(alice.address, 0, 6001, {value: toPay(6001,item1price)})
       ).to.be.revertedWith('Not enough Fraktions on sale');
       console.log('testing total price > msg.value');
       await expect(
-        market.connect(bob).buy(alice.address, 0, 10, {value: toPay(5,item1price)})
+        market.connect(bob).buyFraktions(alice.address, 0, 10, {value: toPay(5,item1price)})
       ).to.be.revertedWith('FraktalMarket: insufficient funds');
-      await market.connect(bob).buy(alice.address, 0, 1000, {value: toPay(1000, item1price)});
+      await market.connect(bob).buyFraktions(alice.address, 0, 1000, {value: toPay(1000, item1price)});
       let bobFraktionsToken1 = await Token1.balanceOf(bob.address, 1);
       let marketBalanceT1Fraktions = await Token1.balanceOf(market.address, 1);
       console.log('Bob has bought ',bobFraktionsToken1.toNumber(), 'fraktions of Token1');
@@ -178,9 +178,9 @@ describe("FraktalMarket", function () {
       expect( await market.getListingPrice(alice.address, 0)).to.equal(newPrice);
       console.log('Carol tries to buy it at old price');
       await expect(
-        market.connect(carol).buy(alice.address, 0, 10, {value: toPay(10,item1price)})
+        market.connect(carol).buyFraktions(alice.address, 0, 10, {value: toPay(10,item1price)})
       ).to.be.revertedWith('FraktalMarket: insufficient funds');
-      await market.connect(carol).buy(alice.address, 0, 3000, {value: toPay(3000, newPrice)});
+      await market.connect(carol).buyFraktions(alice.address, 0, 3000, {value: toPay(3000, newPrice)});
       let carolFraktionsToken1 = await Token1.balanceOf(carol.address, 1);
       console.log('Carol has bought ',carolFraktionsToken1.toNumber(), 'fraktions of Token1 at the new price');
       expect(carolFraktionsToken1).to.equal(ethers.BigNumber.from('3000'));
@@ -224,7 +224,7 @@ describe("FraktalMarket", function () {
     });
     it('Should not allow anyone to buy not listed items', async function () {
       await expect(
-        market.connect(bob).buy(alice.address, 0, 10, {value: toPay(10, item1price)})
+        market.connect(bob).buyFraktions(alice.address, 0, 10, {value: toPay(10, item1price)})
       ).to.be.revertedWith("There are no Fraktions in sale");
     });
     it('Should allow to create a Revenue stream to fraktion holders', async function () {
@@ -476,7 +476,7 @@ describe("FraktalMarket", function () {
   describe('Buy out function',async function () {
     it('Should allow to make offers on NFTs', async function () {
       console.log('Alice lists token1 again');
-      await market.connect(alice).listItem(0,item1price,100,'---');
+      await market.connect(alice).listItem(0,item1price,100);
       marketBalanceT1 = await Token1.balanceOfBatch([market.address, market.address], [0,1]);
       expect(marketBalanceT1[1]).to.equal(ethers.BigNumber.from('100'));
       let bobEthBalance = await ethers.provider.getBalance(bob.address);
@@ -489,24 +489,24 @@ describe("FraktalMarket", function () {
       console.log('Bob has',utils.formatEther(bobEthBalance),' and modifies to 100 ETH');
       offerValue = utils.parseEther('100');
       let offerValueModification = utils.parseEther('90');
-      await Token1.connect(bob).modifyOffer(bob.address, offerValue, {value: offerValueModification});
+      await Token1.connect(bob).modifyOffer(offerValue, {value: offerValueModification});
       proposal = await Token1.getOffer(bob.address);
-      console.log('new price', utils.formatEther(proposal));
+      console.log('new offer', utils.formatEther(proposal));
       expect(proposal).to.equal(offerValue);
       ////////////////////////////////////////////////////
       bobEthBalance = await ethers.provider.getBalance(bob.address);
       console.log('Bob has',utils.formatEther(bobEthBalance),' and modifies to 0 ETH');
       offerValue = utils.parseEther('0');
-      await Token1.connect(bob).modifyOffer(bob.address, offerValue);
+      await Token1.connect(bob).modifyOffer(offerValue);
       proposal = await Token1.getOffer(bob.address);
-      console.log('new price', utils.formatEther(proposal));
+      console.log('new offer', utils.formatEther(proposal));
       expect(proposal).to.equal(offerValue);
       bobEthBalance = await ethers.provider.getBalance(bob.address);
       console.log('Bob has',utils.formatEther(bobEthBalance),' and modifies to 50 ETH');
       offerValue = utils.parseEther('50');
-      await Token1.connect(bob).modifyOffer(bob.address, offerValue, {value: offerValue});
+      await Token1.connect(bob).modifyOffer(offerValue, {value: offerValue});
       proposal = await Token1.getOffer(bob.address);
-      console.log('new price', utils.formatEther(proposal));
+      console.log('new offer', utils.formatEther(proposal));
       expect(proposal).to.equal(offerValue);
     });
   });

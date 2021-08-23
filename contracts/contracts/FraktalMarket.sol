@@ -23,7 +23,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       uint256 tokenId;
       uint256 price;
       uint256 numberOfShares;
-      string typeList;
     }
     EnumerableMap.UintToAddressMap private fraktalNFTs;
     mapping(uint256=> mapping(address => Listing)) listings;
@@ -38,7 +37,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
     event Minted(address creator,string urlIpfs,address tokenAddress,uint nftId);
     event Bought(address buyer,address seller, uint tokenId, uint256 numberOfShares);
     event FeeUpdated(uint256 newFee);
-    event ItemListed(address owner, uint256 tokenId, uint256 price, uint256 amountOfShares, string typeList);
+    event ItemListed(address owner, uint256 tokenId, uint256 price, uint256 amountOfShares);
     event ItemPriceUpdated(address owner, uint256 tokenId, uint256 newPrice);
     event ERC721Locked(address locker, address tokenAddress, address fraktal, uint256 tokenId);
     constructor(address _implementation) {
@@ -79,7 +78,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       seller.transfer(sellersBalance[_msgSender()]);
       sellersBalance[_msgSender()] == 0;
     }
-    function buy(address from, uint256 _tokenId, uint256 _numberOfShares)
+    function buyFraktions(address from, uint256 _tokenId, uint256 _numberOfShares)
       external
       payable
       nonReentrant
@@ -118,19 +117,17 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
     function listItem(
       uint256 _tokenId,
       uint256 _price,
-      uint256 _numberOfShares,
-      string memory _type
+      uint256 _numberOfShares
     ) external returns (bool) {
         FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(_msgSender(),address(this),1,_numberOfShares,'');
         Listing memory listing =
         Listing({
           tokenId: _tokenId,
           price: _price,
-          numberOfShares: _numberOfShares,
-          typeList: _type
+          numberOfShares: _numberOfShares
         });
       listings[_tokenId][_msgSender()] = listing;
-      emit ItemListed(_msgSender(), _tokenId, _price, _numberOfShares, _type);
+      emit ItemListed(_msgSender(), _tokenId, _price, _numberOfShares);
       return true;
     }
 
@@ -188,7 +185,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       require(amount > 0, 'You have no listed Fraktions with this id');
       FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this),_msgSender(),1, amount,'');
       delete listings[_tokenId][_msgSender()];
-      emit ItemListed(_msgSender(), _tokenId, 0, 0, '');
+      emit ItemListed(_msgSender(), _tokenId, 0, 0);
     }
 // GETTERS
 //////////////////////////////////

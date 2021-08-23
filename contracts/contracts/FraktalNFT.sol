@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-import 'hardhat/console.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol';
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
@@ -10,7 +9,6 @@ import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out functionality ;)
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     struct Proposal {
-      address offerer;
       uint256 value;
       uint voteCount; // 10k max
     }
@@ -44,15 +42,13 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
 
 // Specific Functions
 ///////////////////////////
-    /* function voteOffer(address _offerer) public {
+    function voteOffer(address _offerer) public {
       Proposal storage prop = offers[_offerer];
       prop.voteCount += this.balanceOf(_msgSender(), 1);
-      if (prop.voteCount > 100*percenteage) {
+      /* if (prop.voteCount > 100*percenteage) {
         console.log('should fire buy out');
-      }
-    } */
-
-
+      } */
+    }
 
     function lockSharesTransfer(uint numShares, address _to) public {
       require(balanceOf(_msgSender(), 1) - lockedShares[_msgSender()] >= numShares,"Not enough shares");
@@ -71,23 +67,23 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
     function makeOffer(uint256 _value) public payable {
       require(msg.value >= _value, 'you forgot to pay');
       offers[_msgSender()] = Proposal({
-        offerer: _msgSender(),
         value: _value,
         voteCount: 0
         });
         emit OfferMade(_msgSender(), _value);
       }
-    function modifyOffer(address _offerer, uint256 _value) public payable{
-      Proposal storage prop = offers[_offerer];
-      require(prop.offerer == _msgSender(), 'You are not the owner of this offer');
+    function modifyOffer(uint256 _value) public payable{
+      Proposal storage prop = offers[_msgSender()];
+      /* require(prop.offerer == _msgSender(), 'You are not the owner of this offer'); */
       address payable offerer = payable(_msgSender());
+      // voteCount should go to 0 again
       if (_value > prop.value) {
         require(msg.value >= _value - prop.value);
         } else {
           offerer.transfer(prop.value - _value);
         }
         prop.value = _value;
-        emit OfferUpdated(_offerer, _value);
+        emit OfferUpdated(_msgSender(), _value);
       }
     function createRevenuePayment(address[] memory _addresses, uint256[] memory _fraktions) public payable {
       PaymentSplitter newRevenue = new PaymentSplitter(_addresses, _fraktions);
