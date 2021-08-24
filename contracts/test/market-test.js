@@ -142,12 +142,15 @@ describe("FraktalMarket", function () {
       expect(aliceBalance[1]).to.equal(ethers.BigNumber.from('5000'));
     });
     it('Should find item listed information', async function () {
+      let maxPriceRegistered = await Token1.getMinOffer();
       const listedItemPrice = await market.getListingPrice(alice.address, 0);
       let listedItemAmount = await market.getListingAmount(alice.address, 0);
       console.log('Price of listing', utils.formatEther(listedItemPrice));
       console.log('Amount of listed', listedItemAmount.toNumber());
+      console.log('Min offer restricted to > ', utils.formatEther(maxPriceRegistered), 'ETH');
       expect(listedItemPrice).to.equal(item1price);
       expect(listedItemAmount).to.equal(ethers.BigNumber.from('5000'));
+      expect(maxPriceRegistered).to.equal(ethers.BigNumber.from("0"));
     });
     it('Should allow to buy fraktions', async function () {
       console.log('testing +max of listed');
@@ -173,7 +176,7 @@ describe("FraktalMarket", function () {
       ).to.be.revertedWith('There is no list with that ID and your account');
       const hackedPrice = await market.getListingPrice(alice.address, 0);
       expect(hackedPrice).to.equal(item1price);
-      console.log('Alice change price');
+      console.log('Alice change price to ', utils.formatEther(newPrice),' ETH');
       await market.connect(alice).updatePrice(0, newPrice);
       expect( await market.getListingPrice(alice.address, 0)).to.equal(newPrice);
       console.log('Carol tries to buy it at old price');
@@ -184,6 +187,12 @@ describe("FraktalMarket", function () {
       let carolFraktionsToken1 = await Token1.balanceOf(carol.address, 1);
       console.log('Carol has bought ',carolFraktionsToken1.toNumber(), 'fraktions of Token1 at the new price');
       expect(carolFraktionsToken1).to.equal(ethers.BigNumber.from('3000'));
+    });
+    it('Should reflect the change in the minOffer', async function () {
+      const newPrice = utils.parseEther('150');
+      maxPriceRegistered = await Token1.getMinOffer();
+      console.log('Min offer should be restricted to > ', utils.formatEther(maxPriceRegistered), 'ETH');
+      expect(maxPriceRegistered).to.equal(newPrice);
     });
     it('Should allow the seller to rescue the eth', async function () {
       let aliceInitialEthBalance = await ethers.provider.getBalance(alice.address);
@@ -325,7 +334,7 @@ describe("FraktalMarket", function () {
         const initialOwnerBalance = await Token2.balanceOf(bob.address, 0);
         await expect(
           Token2.connect(bob).safeTransferFrom(bob.address,alice.address,1,5001,emptyData)
-        ).to.be.revertedWith("caller < unlocked shares.");
+        ).to.be.revertedWith("sending amount < caller unlocked shares.");
         expect(await Token2.balanceOf(bob.address, 0)).to.equal(
           initialOwnerBalance
         );
@@ -509,5 +518,6 @@ describe("FraktalMarket", function () {
       console.log('new offer', utils.formatEther(proposal));
       expect(proposal).to.equal(offerValue);
     });
+
   });
 });

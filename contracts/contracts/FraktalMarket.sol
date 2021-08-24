@@ -95,7 +95,14 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
         "FraktalMarket: requested shares amount exceeds balance"
       );
       listing.numberOfShares = listing.numberOfShares - _numberOfShares;
-      FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this), _msgSender(), 1, _numberOfShares,'');
+      bytes memory priceInBytes = abi.encodePacked(listing.price * 10000);
+      FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(
+        address(this),
+        _msgSender(),
+        1,
+        _numberOfShares,
+        priceInBytes
+      );
       feesAccrued += msg.value - totalForSeller;
       sellersBalance[from] += totalForSeller;
       emit Bought(_msgSender(), from, _tokenId, _numberOfShares);

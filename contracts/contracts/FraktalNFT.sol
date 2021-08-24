@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
-
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol';
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
@@ -14,6 +13,7 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
     }
     uint public percenteage; // % of owners that decide the sell out (is it changeable for each token?) add functions then!
     PaymentSplitter[] public revenues;
+    uint256 public maxPriceRegistered;
 
     /* Proposal[] public offers; */
     mapping(address => Proposal) public offers;
@@ -27,6 +27,7 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
     event NewRevenueAdded(address payer, uint256 amount);
     event OfferMade(address offerer, uint256 value);
     event OfferUpdated(address offerer,uint256 value);
+    event MinPriceUpdated(uint256 data);
 
     constructor() initializer {}
 
@@ -34,6 +35,7 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
         external
         initializer
     {
+        maxPriceRegistered = 0;
         percenteage = 60;
         __ERC1155_init(uri);
         _mint(_creator, 0, 1, '');
@@ -65,12 +67,13 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
     }
 
     function makeOffer(uint256 _value) public payable {
-      require(msg.value >= _value, 'you forgot to pay');
+      require(_value > maxPriceRegistered, 'Min offer');
+      require(msg.value >= _value, 'No pay');
       offers[_msgSender()] = Proposal({
         value: _value,
         voteCount: 0
         });
-        emit OfferMade(_msgSender(), _value);
+      emit OfferMade(_msgSender(), _value);
       }
     function modifyOffer(uint256 _value) public payable{
       Proposal storage prop = offers[_msgSender()];
@@ -118,13 +121,41 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
           else{
             require(
               (balanceOf(from, tokenId) - lockedShares[from] >= amount),
-                "caller < unlocked shares."
+                "sending amount < caller unlocked shares."
             );
+          }
+          if (data.length > 0) {
+            uint256 price = toUint256(data);
+            if(price > maxPriceRegistered) {
+              maxPriceRegistered = price;
+              emit MinPriceUpdated(price);
+            }
           }
           _safeTransferFrom(from, to, tokenId, amount, data);
           emit TokenTransfered(_msgSender(), to, tokenId, amount);
       }
 
+// Helpers
+////////////////////////////
+  /* function sliceUint(bytes bs, uint start)
+      internal pure
+      returns (uint)
+  {
+      require(bs.length >= start + 32, "slicing out of range");
+      uint x;
+      assembly {
+          x := mload(add(bs, add(0x20, start)))
+      }
+      return x;
+  } */
+  function toUint256(bytes memory _bytes)
+    internal
+    pure
+    returns (uint256 value) {
+      assembly {
+        value := mload(add(_bytes, 0x20))
+      }
+  }
 // Getters
 ///////////////////////////
     function getLocked(address _who) public view returns(uint256){
@@ -135,5 +166,8 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
     }
     function getOffer(address offerer) public view returns(uint256){
       return(offers[offerer].value);
+    }
+    function getMinOffer() public view returns(uint256){
+      return(maxPriceRegistered);
     }
 }
