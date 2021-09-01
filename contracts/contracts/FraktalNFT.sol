@@ -1,102 +1,110 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
+
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol';
-import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
-
-contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out functionality ;)
-    struct Proposal {
-      uint256 value;
-      uint voteCount;
-    }
-    /* uint public percenteage; // % of owners that decide the sell out (is it changeable for each token?) add functions then! */
-    uint256 public maxPriceRegistered;
-    bool sold;
-    address[] public revenues;
-
-    mapping(address => Proposal) public offers;
+import "./PaymentSplitterUpgradeable.sol";
+import "./EnumerableSet.sol";
+import "./EnumerableMap.sol";
+import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
+contract FraktalNFT is ERC1155Upgradeable {
+    using EnumerableSet for EnumerableSet.AddressSet;
+    using EnumerableMap for EnumerableMap.UintToAddressMap;
+    address revenueChannelImplementation;
+    bool fraktionalized;
+    bool public sold;
     mapping (address => uint) public lockedShares;
-    mapping (address => uint) lockedToTotal;
+    mapping (address => uint) public lockedToTotal;
+    EnumerableSet.AddressSet private holders;
+    EnumerableMap.UintToAddressMap private revenues;
 
     event LockedSharesForTransfer(address shareOwner, address to, uint numShares);
-    event NewRevenueAdded(address payer, address revenueChannel, uint256 amount);
-    event OfferMade(address offerer, uint256 value);
-    event ItemSold(address buyer);
     event unLockedSharesForTransfer(address shareOwner, address to, uint numShares);
+    event ItemSold(address buyer);
+    event NewRevenueAdded(address payer, address revenueChannel, uint256 amount);
+
     constructor() initializer {}
 
-    function init(address _creator, string calldata uri)
+    function init(address _creator, string calldata uri, address _revenueChannelImplementation)
         external
         initializer
     {
-      /* percenteage = 60; */
-        sold = false;
-        maxPriceRegistered = 0;
         __ERC1155_init(uri);
-        _mint(_creator, 0, 1, '');
-        _mint(_msgSender(), 1, 10000, '');
+        _mint(_msgSender(), 0, 1, '');
+        _mint(_creator, 1, 10000, '');
+        fraktionalized = true;
+        sold = false;
+        revenueChannelImplementation = _revenueChannelImplementation;
     }
 
-// User Functions
-///////////////////////////
+
+  // User Functions
+  ///////////////////////////
+    function fraktionalize(address _to, uint _tokenId) public {
+      require(this.balanceOf(_msgSender(), 0) == 1, 'not owner');
+      require(fraktionalized == false, 'fraktionalized');
+      fraktionalized = true;
+      _mint(_to, _tokenId, 10000, 'fraktions');
+    }
+    function defraktionalize(uint _tokenId) public {
+      fraktionalized = false;
+      _burn(_msgSender(), _tokenId, 10000); // "ERC1155: burn amount exceeds balance"
+    }
+    function soldBurn(address owner, uint256 _tokenId, uint256 bal) public {
+      _burn(owner, _tokenId, bal);
+    }
     function lockSharesTransfer(uint numShares, address _to) public {
-      require(balanceOf(_msgSender(), 1) - lockedShares[_msgSender()] >= numShares,"Not enough shares");
-      Proposal storage prop = offers[_to];
-      if (prop.value > 0) {
-        prop.voteCount += numShares;
-        if (prop.voteCount > 8000) {
-          sold = true;
-          emit ItemSold(_to);
-        }
-      }
+      require(balanceOf(_msgSender(), 1) - lockedShares[_msgSender()] >= numShares,"Not shares");
       lockedShares[_msgSender()] += numShares;
       lockedToTotal[_to] += numShares;
       emit LockedSharesForTransfer(_msgSender(), _to, numShares);
     }
 
-    // deleted numShares.. check it out for crossed votes!
     function unlockSharesTransfer(address _to) public {
-      /* require(lockedShares[_msgSender()] > 0, 'You dont have locked'); */
-      Proposal storage prop = offers[_to];
-      require(sold == false);
       uint balance = lockedShares[_msgSender()];
-      if (prop.value > 0) {
-        prop.voteCount -= balance;
-      }
       lockedShares[_msgSender()] -= balance;
       lockedToTotal[_to] -= balance;
       emit unLockedSharesForTransfer( _msgSender(), _to, 0);
     }
 
-    function makeOffer(uint256 _value) public payable {
-      require(msg.value >= _value, 'No pay');
-      Proposal storage prop = offers[_msgSender()];
-      address payable offerer = payable(_msgSender());
-      if (_value != 0) {
-        require(_value >= maxPriceRegistered, 'Min offer');
-        require(msg.value >= _value - prop.value);
-      } else {
-          offerer.transfer(prop.value);
-      }
-      offers[_msgSender()] = Proposal({
-        value: _value,
-        voteCount: 0
-        });
-      emit OfferMade(_msgSender(), _value);
+    function createRevenuePayment() public payable returns (address _clone){
+      cleanUpHolders();
+      address[] memory owners = holders.values();
+      uint256 listLength = holders.length();
+      uint256[] memory fraktions = new uint256[](listLength);
+      for (uint i=0; i<listLength; i++){
+          fraktions[i]=this.balanceOf(owners[i], 1);
+        }
+      _clone = ClonesUpgradeable.clone(revenueChannelImplementation);
+      address payable revenueContract = payable(_clone);
+      PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions, sold);
+      revenueContract.transfer(msg.value);
+      uint256 index = revenues.length();
+      revenues.set(index, _clone);
+      emit NewRevenueAdded(_msgSender(), revenueContract, msg.value);
     }
 
-    function createRevenuePayment(address[] memory _addresses, uint256[] memory _fraktions, address buyer) public payable returns (address revenueContract){
-      PaymentSplitter newRevenue = new PaymentSplitter(_addresses, _fraktions);
-      uint256 amount;
-      if(sold == true){
-        amount = offers[buyer].value;
-      }else{
-        amount = msg.value;
+    function sellItem() public payable {
+      require(this.balanceOf(_msgSender(),0) == 1, 'not owner');
+      sold = true;
+      this.createRevenuePayment{value: msg.value}();
+      emit ItemSold(_msgSender()); // this is not the buyer!! is the last voter!
+    }
+
+    function cleanUpHolders() public
+    {
+      uint256 listLength = holders.length();
+      address[] memory remove = new address[](listLength);
+      uint16 removeIndex = 0;
+      for (uint i=0; i<listLength; i++){
+        uint256 bal = this.balanceOf(holders.at(i), 1);//
+        if(bal < 1){
+          remove[removeIndex]= holders.at(i);
+          removeIndex++;
+        }
       }
-      payable(newRevenue).transfer(amount);
-      revenueContract = address(newRevenue);
-      revenues.push(revenueContract);
-      emit NewRevenueAdded(_msgSender(), revenueContract, msg.value);
+      for (uint i=0; i<removeIndex; i++){
+        holders.remove(remove[i]);
+      }
     }
 
 // Overrided functions
@@ -105,54 +113,35 @@ contract FraktalNFT is ERC1155Upgradeable { // has to be burnable (to buy out fu
         internal virtual override
     {
         super._beforeTokenTransfer(operator,from, to, tokenId,amount,data);
-        if(from != address(0)){ // avoid minting transfers
+        if(from != address(0) && to != address(0)){ // avoid mint & burn transfers
           if(tokenId[0] == 0){ // nft transfer (subid 0)
-            if(sold == false){
+            if(fraktionalized == true && sold == false){
               require((lockedToTotal[to] > 9999), "not approval");
             }
           }
           else{
             require(
               (balanceOf(from, tokenId[0]) - lockedShares[from] >= amount[0]),
-                "send amount wrong"
+                "amount wrong"
             );
           }
-          if (data.length > 0) {
-            uint256 price = toUint256(data);
-            if(price > maxPriceRegistered) {
-              maxPriceRegistered = price;
-            }
-          }
-      }
+          holders.add(to);
+        }
     }
-// Helpers
-////////////////////////////
-  function toUint256(bytes memory _bytes)
-    internal
-    pure
-    returns (uint256 value) {
-      assembly {
-        value := mload(add(_bytes, 0x20))
-      }
+
+  // Getters (which ones are needed?)
+  ///////////////////////////
+  function getRevenue(uint256 index) public view returns(address){
+    return revenues.get(index);
   }
-// Getters
-///////////////////////////
-    function getLocked(address _who) public view returns(uint256){
-      return(lockedShares[_who]);
-    }
-    function getLockedTo(address _to) public view returns(uint256){
-      return(lockedToTotal[_to]);
-    }
-    function getOffer(address offerer) public view returns(uint256){
-      return(offers[offerer].value);
-    }
-    function getVotes(address offerer) public view returns(uint256){
-      return(offers[offerer].voteCount);
-    }
-    function getSold() public view returns(bool){
-      return(sold);
-    }
-    /* function getMinOffer() public view returns(uint256){
-      return(maxPriceRegistered);
-    } */
 }
+// Helpers (send to a library?)
+////////////////////////////
+/* function toUint256(bytes memory _bytes)
+internal
+pure
+returns (uint256 value) {
+assembly {
+value := mload(add(_bytes, 0x20))
+}
+} */

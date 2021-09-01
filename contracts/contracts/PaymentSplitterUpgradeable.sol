@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
-
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
+import './FraktalNFT.sol';
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
  * @title PaymentSplitter
@@ -18,7 +19,7 @@ import "@openzeppelin/contracts/utils/Context.sol";
  * accounts but kept in this contract, and the actual transfer is triggered as a separate step by calling the {release}
  * function.
  */
-contract PaymentSplitter is Context {
+contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     event PayeeAdded(address account, uint256 shares);
     event PaymentReleased(address to, uint256 amount);
     event PaymentReceived(address from, uint256 amount);
@@ -30,6 +31,8 @@ contract PaymentSplitter is Context {
     mapping(address => uint256) private _released;
     address[] private _payees;
 
+    address tokenParent;
+    bool buyout;
     /**
      * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
      * the matching position in the `shares` array.
@@ -37,7 +40,21 @@ contract PaymentSplitter is Context {
      * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
      * duplicates in `payees`.
      */
-    constructor(address[] memory payees, uint256[] memory shares_) payable {
+    function init(address[] memory payees, uint256[] memory shares_, bool _buyout)
+    external
+    initializer
+    {
+        __PaymentSplitter_init(payees, shares_);
+        tokenParent = _msgSender();
+        buyout = _buyout;
+    }
+
+    function __PaymentSplitter_init(address[] memory payees, uint256[] memory shares_) internal initializer {
+        __Context_init_unchained();
+        __PaymentSplitter_init_unchained(payees, shares_);
+    }
+
+    function __PaymentSplitter_init_unchained(address[] memory payees, uint256[] memory shares_) internal initializer {
         require(payees.length == shares_.length, "PaymentSplitter: payees and shares length mismatch");
         require(payees.length > 0, "PaymentSplitter: no payees");
 
@@ -98,19 +115,24 @@ contract PaymentSplitter is Context {
      * @dev Triggers a transfer to `account` of the amount of Ether they are owed, according to their percentage of the
      * total shares and their previous withdrawals.
      */
-    function release(address payable account) public virtual {
-        require(_shares[account] > 0, "PaymentSplitter: account has no shares");
+    function release() public virtual {
+        address payable operator = payable(_msgSender());
+        require(_shares[operator] > 0, "PaymentSplitter: account has no shares");
+        if(buyout){
+          uint256 bal = FraktalNFT(tokenParent).balanceOf(_msgSender(), 1);
+          FraktalNFT(tokenParent).soldBurn(_msgSender(),1, bal);
+        }
 
         uint256 totalReceived = address(this).balance + _totalReleased;
-        uint256 payment = (totalReceived * _shares[account]) / _totalShares - _released[account];
+        uint256 payment = (totalReceived * _shares[operator]) / _totalShares - _released[operator];
 
-        require(payment != 0, "PaymentSplitter: account is not due payment");
+        require(payment != 0, "PaymentSplitter: operator is not due payment");
 
-        _released[account] = _released[account] + payment;
+        _released[operator] = _released[operator] + payment;
         _totalReleased = _totalReleased + payment;
 
-        Address.sendValue(account, payment);
-        emit PaymentReleased(account, payment);
+        AddressUpgradeable.sendValue(operator, payment);
+        emit PaymentReleased(operator, payment);
     }
 
     /**
@@ -128,4 +150,5 @@ contract PaymentSplitter is Context {
         _totalShares = _totalShares + shares_;
         emit PayeeAdded(account, shares_);
     }
+    uint256[45] private __gap;
 }
