@@ -99,7 +99,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       emit Minted(_msgSender(), urlIpfs, _clone,index);
     }
 
-
     function rescueEth() public nonReentrant {
       require(sellersBalance[_msgSender()] > 0, 'You dont have any to claim');
       address payable seller = payable(_msgSender());
@@ -149,11 +148,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       FraktalNFT(tokenAddress).safeTransferFrom(address(this), _msgSender(), 0, 1, '');
       emit Defraktionalized(tokenAddress);
     }
-    function claimFraktal(uint _tokenId) external {
-      // how do i control that is sended to the buyer??? (i can send it in the buyout flow)
-      FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this),_msgSender(),0,1,'');
-      emit FraktalClaimed(_msgSender(), _tokenId);
-    }
 
     function listItem(
       uint256 _tokenId,
@@ -193,15 +187,29 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
 
     function voteOffer(address offerer, address tokenAddress) public {
       Proposal storage offer = offers[offerer][tokenAddress];
-      // careful here.. i dont keep votes by person and they could unlock and vote again
+      // careful here.. i dont keep votes by person and they could vote again
+      //use locking for votes.. keep track on the fraktalNFT contract balance
       uint256 votesAvailable = FraktalNFT(tokenAddress).balanceOf(_msgSender(), 1) - FraktalNFT(tokenAddress).lockedShares(_msgSender());
       offer.voteCount += votesAvailable;
       if(offer.voteCount >= 8000){
         FraktalNFT(tokenAddress).sellItem{value:offer.value}();
-        // also.. what to do with listed fraktions?? 
+        // also.. what to do with listed fraktions??
+        /* MUSTs */
+        // improve voting
+        // alternatives:
+        /* pause transfers and return listed fraktions to the seller(s) once item is sold */
+        /* demand the buyer to claim for the token, launching its transfer and payment revenue */
+        /*  */
+
         /* address payable = payable(offer.offerer); */
         /* FraktalNFT(tokenAddress).safeTransferFrom(address(this), offer.offerer, 0, 1, ""); */
       }
+    }
+
+    function claimFraktal(uint _tokenId) external {
+      // how do i control that is sended to the buyer??? (i can send it in the buyout flow)
+      FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this),_msgSender(),0,1,'');
+      emit FraktalClaimed(_msgSender(), _tokenId);
     }
 
     function claimERC721(uint _tokenId) external {
@@ -246,6 +254,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       emit ERC1155Locked(_msgSender(), _tokenAddress, _clone, _tokenId);
     }
 
+    // not used anymore, to recreate a listed struct we need to unlist it first
     function updatePrice(uint256 _tokenId, uint256 _newPrice) external {
       Listing storage listing = listings[_tokenId][_msgSender()];
       require(listing.numberOfShares > 0, 'There is no list with that ID and your account');

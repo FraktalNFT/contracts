@@ -51,6 +51,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
     function soldBurn(address owner, uint256 _tokenId, uint256 bal) public {
       _burn(owner, _tokenId, bal);
+      // check out balances of fraktions and set> fraktionalize: false ?? 
     }
     function lockSharesTransfer(uint numShares, address _to) public {
       require(balanceOf(_msgSender(), 1) - lockedShares[_msgSender()] >= numShares,"Not shares");
@@ -84,7 +85,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
 
     function sellItem() public payable {
-      require(this.balanceOf(_msgSender(),0) == 1, 'not owner');
+      require(this.balanceOf(_msgSender(),0) == 1, 'not owner'); // its the market..
       sold = true;
       this.createRevenuePayment{value: msg.value}();
       emit ItemSold(_msgSender()); // this is not the buyer!! is the last voter!
@@ -124,6 +125,7 @@ contract FraktalNFT is ERC1155Upgradeable {
               (balanceOf(from, tokenId[0]) - lockedShares[from] >= amount[0]),
                 "amount wrong"
             );
+            //require(sold != true, 'item is sold'); // sold items block the transfer of fraktions
           }
           holders.add(to);
         }
