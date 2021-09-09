@@ -139,7 +139,7 @@ describe("FraktalNFT", function () {
     });
     it('should allow if consent on locking fraktions', async function () {
       if(logs) console.log('Bob locks the fraktions');
-      await Token1.connect(bob).lockSharesTransfer(10000, alice.address);
+      await Token1.connect(bob).lockSharesTransfer(bob.address, 10000, alice.address);
       await Token1.connect(bob).safeTransferFrom(bob.address, alice.address, 0,1,emptyData);
       let balances = await Token1.balanceOfBatch([bob.address,bob.address, alice.address, alice.address],[0,1,0,1]);
       expect(balances[0]).to.equal(ethers.BigNumber.from('0'));
@@ -155,7 +155,7 @@ describe("FraktalNFT", function () {
     it('should be movable by receiver if consent though', async function () {
       if(logs) console.log('Bob unlocks all fraktions');
       await Token1.connect(bob).unlockSharesTransfer(alice.address);
-      await Token1.connect(bob).lockSharesTransfer(10000, bob.address);
+      await Token1.connect(bob).lockSharesTransfer(bob.address, 10000, bob.address);
       await Token1.connect(alice).safeTransferFrom(alice.address, bob.address,0,1,emptyData);
       await Token1.connect(bob).unlockSharesTransfer(bob.address);
       let balances = await Token1.balanceOfBatch([bob.address,bob.address, alice.address],[0,1,0]);
@@ -215,22 +215,23 @@ describe("FraktalNFT", function () {
         item1price, // total eth/amount
         qty); // amount
       let balances = await Token1.balanceOfBatch([market.address, carol.address], [1,1]);
-      expect(balances[0]).to.equal(prevBalances[0]+qty);
-      expect(balances[1]).to.equal(prevBalances[1]-qty);
+      // testing listed items not in market property
+      // expect(balances[0]).to.equal(prevBalances[0]+qty);
+      // expect(balances[1]).to.equal(prevBalances[1]-qty);
       let listingPrice = await market.getListingPrice(carol.address, 0);
       expect(listingPrice).to.equal(ethers.BigNumber.from(item1price));
       let listingAmount = await market.getListingAmount(carol.address, 0);
       expect(listingAmount).to.equal(ethers.BigNumber.from(qty));
     });
     it('Should allow buy fraktions listed', async function () {
-      let prevBalances = await Token1.balanceOfBatch([market.address, alice.address],[1,1]);
+      let prevBalances = await Token1.balanceOfBatch([carol.address, alice.address],[1,1]);
       let prevSellerBalance = await market.getSellerBalance(carol.address);
       expect(prevSellerBalance).to.equal(ethers.BigNumber.from('0'));
       let qty = 3000;
       let value = toPay(qty, item1price);
       if(logs) console.log(`Alice buys ${qty} fraktions`);
       await market.connect(alice).buyFraktions(carol.address, 0, qty, {value: value});
-      let balances = await Token1.balanceOfBatch([market.address, alice.address],[1,1]);
+      let balances = await Token1.balanceOfBatch([carol.address, alice.address],[1,1]);
       let sellerBalance = await market.getSellerBalance(carol.address);
       // expect(sellerBalance).to.bigger(ethers.BigNumber.from());
       assert(sellerBalance > prevSellerBalance, 'Seller payment didnt enter')
@@ -245,6 +246,8 @@ describe("FraktalNFT", function () {
     });
     it('Should allow to make offers', async function () {
       if(logs) console.log('Deedee makes an offer on the token')
+      // before makeoffer we need to approve the market..
+
       await market.connect(deedee).makeOffer(Token1.address, utils.parseEther('200'),{value: utils.parseEther('200')});
       let offerValue = await market.getOffer(deedee.address, Token1.address);
       expect(offerValue).to.equal(utils.parseEther('200'))
@@ -258,17 +261,42 @@ describe("FraktalNFT", function () {
       expect(offerValue).to.equal(utils.parseEther('0'));
       assert(deedeeEthBalance1 > deedeeEthBalance0, 'offer not taken');
     });
-    it('Should allow to change price', async function () {
-      if(logs) console.log('Bob tries to change price');
-      await expect(
-        market.connect(bob).updatePrice(0, newPrice)
-      ).to.be.revertedWith('There is no list with that ID and your account');
-      const hackedPrice = await market.getListingPrice(carol.address, 0);
-      expect(hackedPrice).to.equal(item1price);
-      if(logs) console.log('Carol change price to ', utils.formatEther(newPrice),' ETH');
-      await market.connect(carol).updatePrice(0, newPrice);
-      expect( await market.getListingPrice(carol.address, 0)).to.equal(newPrice);
+    it('should allow to unlist the fraktions', async function () {
+      if(logs) console.log('Carol unlist the items');
+      await market.connect(carol).unlistItem(0);
+      let listingAmount = await market.getListingAmount(carol.address, 0);
+      expect(listingAmount).to.equal(ethers.BigNumber.from('0'));
     });
+    it('should not allow to buy unlisted items', async function () {
+      if(logs) console.log('Alice tries to buy');
+      await expect(
+        market.connect(alice).buyFraktions(carol.address, 0, 10, {value: toPay(10,item1price)})
+      ).to.be.revertedWith('Not enough Fraktions on sale');
+    });
+    it('should allow to re list items', async function () {
+      if(logs) console.log('Carol list the items with new price');
+      let qty = await Token1.balanceOf(carol.address, 1);
+      await market.connect(carol).listItem(
+        0,//marketId
+        newPrice, // total eth/amount
+        qty); // amount
+      let listingPrice = await market.getListingPrice(carol.address, 0);
+      expect(listingPrice).to.equal(ethers.BigNumber.from(newPrice));
+      let listingAmount = await market.getListingAmount(carol.address, 0);
+      expect(listingAmount).to.equal(ethers.BigNumber.from(qty));
+    });
+
+    // it('Should allow to change price', async function () {
+    //   if(logs) console.log('Bob tries to change price');
+    //   await expect(
+    //     market.connect(bob).updatePrice(0, newPrice)
+    //   ).to.be.revertedWith('There is no list with that ID and your account');
+    //   const hackedPrice = await market.getListingPrice(carol.address, 0);
+    //   expect(hackedPrice).to.equal(item1price);
+    //   if(logs) console.log('Carol change price to ', utils.formatEther(newPrice),' ETH');
+    //   await market.connect(carol).updatePrice(0, newPrice);
+    //   expect( await market.getListingPrice(carol.address, 0)).to.equal(newPrice);
+    // });
     it('Should allow to buy fraktions at new price', async function () {
       if(logs) console.log('Alice tries to buy it at old price');
       await expect(
@@ -332,6 +360,17 @@ describe("FraktalNFT", function () {
     });
     it('Should allow to vote on offers', async function () {
       if(logs) console.log('Bob votes on Deedee offer')
+      // await Token1.connect(bob).setApprovalForAll(market.address, false); // if i set false it fails..
+      await market.connect(bob).voteOffer(deedee.address, Token1.address);
+      let votesOnOffer = await market.getVotes(deedee.address, Token1.address);
+      let balances = await Token1.balanceOfBatch([bob.address],[1]);
+      expect(votesOnOffer).to.equal(balances[0]);
+    });
+    it('BUG? Should allow to unlock fraktions and vote again (votes dont sum)', async function () {
+      if(logs) console.log('Bob unlocks its fraktions');
+      await Token1.connect(bob).unlockSharesTransfer(deedee.address);
+      if(logs) console.log('Bob votes on Deedee offer again')
+      // await Token1.connect(bob).setApprovalForAll(market.address, false); // if i set false it fails..
       await market.connect(bob).voteOffer(deedee.address, Token1.address);
       let votesOnOffer = await market.getVotes(deedee.address, Token1.address);
       let balances = await Token1.balanceOfBatch([bob.address],[1]);
@@ -346,6 +385,16 @@ describe("FraktalNFT", function () {
       let nftStatus = await Token1.sold();
       expect(nftStatus).to.equal(true);
     });
+    it('Should not allow anyone to claim the fraktal', async function () {
+      if(logs) console.log('Alice claims the buyed NFT');
+      await expect(
+        market.connect(alice).claimFraktal(0)
+      ).to.be.revertedWith('not buyer');
+      let balances = await Token1.balanceOfBatch([alice.address, market.address],[0,0]);
+      expect(balances[0]).to.equal(0);
+      expect(balances[1]).to.equal(1);
+    });
+
     it('Should allow to claim the fraktal', async function () {
       if(logs) console.log('Deedee claims the buyed NFT');
       await market.connect(deedee).claimFraktal(0);

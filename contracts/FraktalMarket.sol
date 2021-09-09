@@ -113,7 +113,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       nonReentrant
     {
       Listing storage listing = listings[_tokenId][from];
-      require(listing.numberOfShares > 0, 'There are no Fraktions in sale');
+      /* require(listing.numberOfShares > 0, 'There are no Fraktions in sale'); repeated???*/
       require(listing.numberOfShares >= _numberOfShares, 'Not enough Fraktions on sale');
       uint256 buyPrice = (listing.price * _numberOfShares);
       uint256 totalFees = buyPrice * fee / 100;
@@ -124,7 +124,8 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
         maxPriceRegistered[fraktalNFTs.get(_tokenId)] = listing.price*10000;
       }
       FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(
-        address(this),
+        /* address(this), MARKET */
+        from,
         _msgSender(),
         1,
         _numberOfShares,
@@ -154,9 +155,12 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       uint256 _price,
       uint16 _numberOfShares
     ) external returns (bool) {
+        require(!FraktalNFT(fraktalNFTs.get(_tokenId)).sold(), 'item sold');
         Listing memory listed = listings[_tokenId][_msgSender()];
         require(listed.numberOfShares == 0, 'unlist first');
-        FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(_msgSender(),address(this),1,_numberOfShares,'');
+// testing not transferred fraktions to the market
+// here, unlist and buy
+        /* FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(_msgSender(),address(this),1,_numberOfShares,''); */
         Listing memory listing =
         Listing({
           tokenId: _tokenId,
@@ -187,42 +191,56 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
 
     function voteOffer(address offerer, address tokenAddress) public {
       Proposal storage offer = offers[offerer][tokenAddress];
-      // careful here.. i dont keep votes by person and they could vote again
-      //use locking for votes.. keep track on the fraktalNFT contract balance
       uint256 votesAvailable = FraktalNFT(tokenAddress).balanceOf(_msgSender(), 1) - FraktalNFT(tokenAddress).lockedShares(_msgSender());
-      offer.voteCount += votesAvailable;
-      if(offer.voteCount >= 8000){
-        FraktalNFT(tokenAddress).sellItem{value:offer.value}();
-        // also.. what to do with listed fraktions??
-        /* MUSTs */
-        // improve voting
-        // alternatives:
-        /* pause transfers and return listed fraktions to the seller(s) once item is sold */
-        /* demand the buyer to claim for the token, launching its transfer and payment revenue */
-        /*  */
-
-        /* address payable = payable(offer.offerer); */
-        /* FraktalNFT(tokenAddress).safeTransferFrom(address(this), offer.offerer, 0, 1, ""); */
+      // should lock the fraktions then.. but they can unlock and vote again!
+      // so maybe we set as the address has vote.. but they can send it and vote again..
+      // get the votes from :   FraktalNFT(tokenAddress).lockedToTotal!!
+      FraktalNFT(tokenAddress).lockSharesTransfer(_msgSender(),votesAvailable, offerer);
+      offer.voteCount = FraktalNFT(tokenAddress).lockedToTotal(offerer);
+      if(FraktalNFT(tokenAddress).lockedToTotal(offerer) > 8000){
+        FraktalNFT(tokenAddress).sellItem();
       }
     }
 
     function claimFraktal(uint _tokenId) external {
-      // how do i control that is sended to the buyer??? (i can send it in the buyout flow)
+      /* this exists for recipients authorized to get the fraktal from the market */
+      /* they should return it after, it will be locked by conditions and holders, but they
+      must initiate the transaction.. CAREFUL there */
+       address tokenAddress = fraktalNFTs.get(_tokenId);
+       if(FraktalNFT(tokenAddress).sold()){
+         Proposal memory offer = offers[_msgSender()][tokenAddress];
+         require(FraktalNFT(tokenAddress).lockedToTotal(_msgSender())>8000, 'not buyer');
+         FraktalNFT(tokenAddress).createRevenuePayment{value: offer.value}();
+         /* MUSTs */
+         // also.. what to do with listed fraktions??
+         // alternatives:
+         /* pause transfers and return listed fraktions to the seller(s) once item is sold */
+
+         /* add collateral retrieval if exists || demand a future claimERC... */
+         //if(lockedERC721s[tokenAddress] != zeroAddress){
+//           shouldnt be called the claimERC... method?
+         //}
+         /*  */
+
+       }
+
       FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this),_msgSender(),0,1,'');
       emit FraktalClaimed(_msgSender(), _tokenId);
     }
 
     function claimERC721(uint _tokenId) external {
+      // why dont use interfaces in here? is it possible to have one interface for both schemas?
+      // if so, reduce our counters (lockedERC and lockedERCindexes)
       address fraktalAddress = fraktalNFTs.get(_tokenId);
       address collateralNft = lockedERC721s[fraktalAddress];
       uint256 index = lockedERC721indexes[collateralNft];
       ERC721Upgradeable(collateralNft).transferFrom(address(this), _msgSender(), index);
-      /* FraktalNFT(fraktalAddress).lockSharesTransfer(10000, address(this)); */
       FraktalNFT(fraktalAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
       fraktalNFTs.set(_tokenId, zeroAddress);
       emit ERC721UnLocked(_msgSender(), _tokenId, collateralNft, index);
     }
     function importERC721(address _tokenAddress, uint256 _tokenId) external returns (address _clone) {
+      // why dont use interfaces in here?
       string memory uri = ERC721Upgradeable(_tokenAddress).tokenURI(_tokenId);
       ERC721Upgradeable(_tokenAddress).transferFrom(_msgSender(), address(this), _tokenId);
       _clone = this.mint(uri);
@@ -234,6 +252,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       emit ERC721Locked(_msgSender(), _tokenAddress, _clone, _tokenId);
     }
     function claimERC1155(uint _tokenId) external {
+      // why dont use interfaces in here?
       address fraktalAddress = fraktalNFTs.get(_tokenId);
       address collateralNft = lockedERC1155s[fraktalAddress];
       uint256 index = lockedERC1155indexes[collateralNft];
@@ -243,6 +262,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       emit ERC1155UnLocked(_msgSender(), fraktalAddress, collateralNft, _tokenId);
     }
     function importERC1155(address _tokenAddress, uint256 _tokenId) external returns (address _clone) {
+      // why dont use interfaces in here?
       string memory uri = ERC1155Upgradeable(_tokenAddress).uri(_tokenId);
       ERC1155Upgradeable(_tokenAddress).safeTransferFrom(_msgSender(), address(this), _tokenId, 1, '');
       _clone = this.mint(uri);
@@ -265,7 +285,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
     function unlistItem(uint256 _tokenId) external {
       uint amount = getListingAmount(_msgSender(), _tokenId);
       require(amount > 0, 'You have no listed Fraktions with this id');
-      FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this),_msgSender(),1, amount,'');
+      /* FraktalNFT(fraktalNFTs.get(_tokenId)).safeTransferFrom(address(this),_msgSender(),1, amount,''); */
       delete listings[_tokenId][_msgSender()];
       emit ItemListed(_msgSender(), _tokenId, 0, 0);
     }
