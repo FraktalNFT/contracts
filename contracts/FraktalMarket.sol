@@ -31,15 +31,15 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
     mapping(uint256=> mapping(address => Listing)) listings;
     mapping (address => uint256) public sellersBalance;
     mapping (address => address) public lockedERC721s;
-    mapping (address => uint) public lockedERC721indexes;
+    mapping (address => uint256) public lockedERC721indexes;
     mapping (address => uint256) public maxPriceRegistered;
     mapping (address => mapping(address => Proposal)) public offers;
     mapping (address => address) public lockedERC1155s;
-    mapping (address => uint) public lockedERC1155indexes;
+    mapping (address => uint256) public lockedERC1155indexes;
 
 
-    event Minted(address creator,string urlIpfs,address tokenAddress,uint nftId);
-    event Bought(address buyer,address seller, uint tokenId, uint16 numberOfShares);
+    event Minted(address creator,string urlIpfs,address tokenAddress,uint256 nftId);
+    event Bought(address buyer,address seller, uint256 tokenId, uint16 numberOfShares);
     event FeeUpdated(uint256 newFee);
     event ItemListed(address owner, uint256 tokenId, uint256 price, uint256 amountOfShares);
     event ItemPriceUpdated(address owner, uint256 tokenId, uint256 newPrice);
@@ -224,7 +224,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       emit FraktalClaimed(_msgSender(), _tokenId);
     }
 
-    function claimERC721(uint _tokenId) external {
+    function claimERC721(uint256 _tokenId) external {
       // why dont use interfaces in here? is it possible to have one interface for both schemas?
       // if so, reduce our counters (lockedERC and lockedERCindexes)
       address fraktalAddress = fraktalNFTs.get(_tokenId);
@@ -247,7 +247,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       FraktalNFT(fraktalNFTs.get(index)).safeTransferFrom(address(this), _msgSender(), 1, 10000, '');
       emit ERC721Locked(_msgSender(), _tokenAddress, _clone, _tokenId);
     }
-    function claimERC1155(uint _tokenId) external {
+    function claimERC1155(uint256 _tokenId) external {
       // why dont use interfaces in here?
       address fraktalAddress = fraktalNFTs.get(_tokenId);
       address collateralNft = lockedERC1155s[fraktalAddress];
@@ -282,13 +282,13 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
     function getFee() public view returns(uint256){
       return(fee);
     }
-    function getListingPrice(address _listOwner, uint _tokenId) public view returns(uint256){
+    function getListingPrice(address _listOwner, uint256 _tokenId) public view returns(uint256){
       return listings[_tokenId][_listOwner].price;
     }
-    function getListingAmount(address _listOwner, uint _tokenId) public view returns(uint256){
+    function getListingAmount(address _listOwner, uint256 _tokenId) public view returns(uint256){
       return listings[_tokenId][_listOwner].numberOfShares;
     }
-    function getFraktalAddress(uint _tokenId) public view returns(address){
+    function getFraktalAddress(uint256 _tokenId) public view returns(address){
       return address(fraktalNFTs.get(_tokenId));
     }
     function getERC721Collateral(address _tokenId) public view returns(address){
