@@ -22,7 +22,7 @@ const awaitTokenAddress = async tx => {
 };
 const awaitPaymentSplitterAddress = async tx => {
   const receipt = await tx.wait();
-  const abi = new ethers.utils.Interface(['event NewRevenueAdded(address payer, address revenueChannel, uint256 amount)']);
+  const abi = new ethers.utils.Interface(['event NewRevenueAdded(address payer, address revenueChannel, uint256 amount, bool sold)']);
   const eventFragment = abi.events[Object.keys(abi.events)[0]];
   const eventTopic = abi.getEventTopic(eventFragment);
   const event = receipt.logs.find(e => e.topics[0] === eventTopic);
@@ -287,17 +287,42 @@ describe("FraktalNFT-ERC1155 handlers", function () {
       expect(offerValue).to.equal(utils.parseEther('0'));
       assert(deedeeEthBalance1 > deedeeEthBalance0, 'offer not taken');
     });
-    it('Should allow to change price', async function () {
-      if(logs) console.log('Bob tries to change price');
-      await expect(
-        market.connect(bob).updatePrice(1, newPrice)
-      ).to.be.revertedWith('There is no list with that ID and your account');
-      const hackedPrice = await market.getListingPrice(carol.address, 1);
-      expect(hackedPrice).to.equal(item1price);
-      if(logs) console.log('Carol change price to ', utils.formatEther(newPrice),' ETH');
-      await market.connect(carol).updatePrice(1, newPrice);
-      expect( await market.getListingPrice(carol.address, 1)).to.equal(newPrice);
+    it('should allow to unlist the fraktions', async function () {
+      if(logs) console.log('Carol unlist the items');
+      await market.connect(carol).unlistItem(1);
+      let listingAmount = await market.getListingAmount(carol.address, 1);
+      expect(listingAmount).to.equal(ethers.BigNumber.from('0'));
     });
+    it('should not allow to buy unlisted items', async function () {
+      if(logs) console.log('Alice tries to buy');
+      await expect(
+        market.connect(alice).buyFraktions(carol.address, 1, 10, {value: toPay(10,item1price)})
+      ).to.be.revertedWith('Not enough Fraktions on sale');
+    });
+    it('should allow to re list items', async function () {
+      if(logs) console.log('Carol list the items with new price');
+      let qty = await Token1.balanceOf(carol.address, 1);
+      await market.connect(carol).listItem(
+        1,//marketId
+        newPrice, // total eth/amount
+        qty); // amount
+      let listingPrice = await market.getListingPrice(carol.address, 1);
+      expect(listingPrice).to.equal(ethers.BigNumber.from(newPrice));
+      let listingAmount = await market.getListingAmount(carol.address, 1);
+      expect(listingAmount).to.equal(ethers.BigNumber.from(qty));
+    });
+
+    // it('Should allow to change price', async function () {
+    //   if(logs) console.log('Bob tries to change price');
+    //   await expect(
+    //     market.connect(bob).updatePrice(1, newPrice)
+    //   ).to.be.revertedWith('There is no list with that ID and your account');
+    //   const hackedPrice = await market.getListingPrice(carol.address, 1);
+    //   expect(hackedPrice).to.equal(item1price);
+    //   if(logs) console.log('Carol change price to ', utils.formatEther(newPrice),' ETH');
+    //   await market.connect(carol).updatePrice(1, newPrice);
+    //   expect( await market.getListingPrice(carol.address, 1)).to.equal(newPrice);
+    // });
     it('Should allow to buy fraktions at new price', async function () {
       if(logs) console.log('Alice tries to buy it at old price');
       await expect(

@@ -10,7 +10,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     address revenueChannelImplementation;
-    bool public fraktionalized; //changed to public
+    bool fraktionalized;
     bool public sold;
     mapping (address => uint) public lockedShares;
     mapping (address => uint) public lockedToTotal;
@@ -34,6 +34,7 @@ contract FraktalNFT is ERC1155Upgradeable {
         fraktionalized = true;
         sold = false;
         revenueChannelImplementation = _revenueChannelImplementation;
+        holders.add(_creator);
     }
 
 
@@ -51,12 +52,16 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
     function soldBurn(address owner, uint256 _tokenId, uint256 bal) public {
       _burn(owner, _tokenId, bal);
+      // check out balances of fraktions and set fraktionalize = false ??
     }
-    function lockSharesTransfer(uint numShares, address _to) public {
-      require(balanceOf(_msgSender(), 1) - lockedShares[_msgSender()] >= numShares,"Not shares");
-      lockedShares[_msgSender()] += numShares;
+    function lockSharesTransfer(address from, uint numShares, address _to) public {
+      if(from != _msgSender()){
+          require(isApprovedForAll(from, _msgSender()), 'not approved'); // _msgSender should be the market (or approved)
+      }
+      require(balanceOf(from, 1) - lockedShares[from] >= numShares,"Not shares");
+      lockedShares[from] += numShares;
       lockedToTotal[_to] += numShares;
-      emit LockedSharesForTransfer(_msgSender(), _to, numShares);
+      emit LockedSharesForTransfer(from, _to, numShares);
     }
 
     function unlockSharesTransfer(address _to) public {
@@ -84,10 +89,9 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
 
     function sellItem() public payable {
-      require(this.balanceOf(_msgSender(),0) == 1, 'not owner');
+      require(this.balanceOf(_msgSender(),0) == 1, 'not owner'); // its the market as intermediary
       sold = true;
-      this.createRevenuePayment{value: msg.value}();
-      emit ItemSold(_msgSender()); // this is not the buyer!! is the last voter!
+      emit ItemSold(_msgSender()); // this is not the buyer!!
     }
 
     function cleanUpHolders() public
@@ -124,6 +128,7 @@ contract FraktalNFT is ERC1155Upgradeable {
               (balanceOf(from, tokenId[0]) - lockedShares[from] >= amount[0]),
                 "amount wrong"
             );
+            //require(sold != true, 'item is sold'); // sold items block the transfer of fraktions
           }
           holders.add(to);
         }

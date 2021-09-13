@@ -22,7 +22,7 @@ const awaitTokenAddress = async tx => {
 };
 const awaitPaymentSplitterAddress = async tx => {
   const receipt = await tx.wait();
-  const abi = new ethers.utils.Interface(['event NewRevenueAdded(address payer, address revenueChannel, uint256 amount)']);
+  const abi = new ethers.utils.Interface(['event NewRevenueAdded(address payer, address revenueChannel, uint256 amount, bool sold)']);
   const eventFragment = abi.events[Object.keys(abi.events)[0]];
   const eventTopic = abi.getEventTopic(eventFragment);
   const event = receipt.logs.find(e => e.topics[0] === eventTopic);

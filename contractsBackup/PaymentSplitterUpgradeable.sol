@@ -32,7 +32,7 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     address[] private _payees;
 
     address tokenParent;
-    bool buyout;
+    bool public buyout;
     /**
      * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
      * the matching position in the `shares` array.

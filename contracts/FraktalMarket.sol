@@ -113,7 +113,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       nonReentrant
     {
       Listing storage listing = listings[_tokenId][from];
-      /* require(listing.numberOfShares > 0, 'There are no Fraktions in sale'); repeated???*/
+      require(!FraktalNFT(fraktalNFTs.get(_tokenId)).sold(), 'item sold');
       require(listing.numberOfShares >= _numberOfShares, 'Not enough Fraktions on sale');
       uint256 buyPrice = (listing.price * _numberOfShares);
       uint256 totalFees = buyPrice * fee / 100;
@@ -211,10 +211,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
          Proposal memory offer = offers[_msgSender()][tokenAddress];
          require(FraktalNFT(tokenAddress).lockedToTotal(_msgSender())>8000, 'not buyer');
          FraktalNFT(tokenAddress).createRevenuePayment{value: offer.value}();
-         /* MUSTs */
-         // also.. what to do with listed fraktions??
-         // alternatives:
-         /* pause transfers and return listed fraktions to the seller(s) once item is sold */
 
          /* add collateral retrieval if exists || demand a future claimERC... */
          //if(lockedERC721s[tokenAddress] != zeroAddress){
@@ -272,14 +268,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, ERC721Holder{
       FraktalNFT(fraktalNFTs.get(index)).setApprovalForAll(_msgSender(), true);
       FraktalNFT(fraktalNFTs.get(index)).safeTransferFrom(address(this), _msgSender(), 1, 10000, '');
       emit ERC1155Locked(_msgSender(), _tokenAddress, _clone, _tokenId);
-    }
-
-    // not used anymore, to recreate a listed struct we need to unlist it first
-    function updatePrice(uint256 _tokenId, uint256 _newPrice) external {
-      Listing storage listing = listings[_tokenId][_msgSender()];
-      require(listing.numberOfShares > 0, 'There is no list with that ID and your account');
-      listing.price = _newPrice;
-      emit ItemPriceUpdated(_msgSender(), _tokenId, _newPrice);
     }
 
     function unlistItem(uint256 _tokenId) external {

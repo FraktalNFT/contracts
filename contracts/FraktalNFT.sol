@@ -20,7 +20,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     event LockedSharesForTransfer(address shareOwner, address to, uint numShares);
     event unLockedSharesForTransfer(address shareOwner, address to, uint numShares);
     event ItemSold(address buyer);
-    event NewRevenueAdded(address payer, address revenueChannel, uint256 amount);
+    event NewRevenueAdded(address payer, address revenueChannel, uint256 amount, bool sold);
 
     constructor() initializer {}
 
@@ -34,6 +34,7 @@ contract FraktalNFT is ERC1155Upgradeable {
         fraktionalized = true;
         sold = false;
         revenueChannelImplementation = _revenueChannelImplementation;
+        holders.add(_creator);
     }
 
 
@@ -84,7 +85,7 @@ contract FraktalNFT is ERC1155Upgradeable {
       revenueContract.transfer(msg.value);
       uint256 index = revenues.length();
       revenues.set(index, _clone);
-      emit NewRevenueAdded(_msgSender(), revenueContract, msg.value);
+      emit NewRevenueAdded(_msgSender(), revenueContract, msg.value, sold);
     }
 
     function sellItem() public payable {
