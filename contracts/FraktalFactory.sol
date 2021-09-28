@@ -117,6 +117,7 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
       ERC721Upgradeable(collateralNft).transferFrom(address(this), _msgSender(), index);
       FraktalNFT(fraktalAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
       fraktalNFTs.set(_tokenId, address(0));
+      lockedERC721s[fraktalAddress] = address(0);
       emit ERC721UnLocked(_msgSender(), _tokenId, collateralNft, index);
     }
     function claimERC1155(uint256 _tokenId) external {
@@ -127,6 +128,7 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
       ERC1155Upgradeable(collateralNft).safeTransferFrom(address(this), _msgSender(), index,1,'');
       FraktalNFT(fraktalAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
       fraktalNFTs.set(_tokenId, address(0));
+      lockedERC1155s[fraktalAddress] = address(0);
       emit ERC1155UnLocked(_msgSender(), fraktalAddress, collateralNft, _tokenId);
     }
 
@@ -135,11 +137,11 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
     function getFraktalAddress(uint256 _tokenId) public view returns(address){
       return address(fraktalNFTs.get(_tokenId));
     }
-    function getERC721Collateral(address _tokenId) public view returns(address){
-      return(lockedERC721s[_tokenId]);
+    function getERC721Collateral(address _tokenAddress) public view returns(address){
+      return(lockedERC721s[_tokenAddress]);
     }
-    function getERC1155Collateral(address _tokenId) public view returns(address){
-      return(lockedERC1155s[_tokenId]);
+    function getERC1155Collateral(address _tokenAddress) public view returns(address){
+      return(lockedERC1155s[_tokenAddress]);
     }
     function getFraktalsLength() public view returns(uint256){
       return(fraktalNFTs.length());

@@ -55,7 +55,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   // User Functions
   ///////////////////////////
     function fraktionalize(address _to, uint _tokenId) public {
-      // allow multiple inputs to send the fraktions?
+      // allow multiple input address to send the fraktions?
       require(_tokenId != 0, 'Not fraktionalizable');
       require(this.balanceOf(_msgSender(), 0) == 1, 'not owner');
       require(fraktionalized == false, 'fraktionalized');
@@ -73,15 +73,14 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
     function defraktionalize() public {
       fraktionalized = false;
-      _burn(_msgSender(), fraktionsIndex, 10000); // "ERC1155: burn amount exceeds balance"
+      _burn(_msgSender(), fraktionsIndex, 10000);
     }
     function soldBurn(address owner, uint256 _tokenId, uint256 bal) public {
       _burn(owner, _tokenId, bal);
-      // check out balances of fraktions and set fraktionalize = false ??
     }
     function lockSharesTransfer(address from, uint numShares, address _to) public {
       if(from != _msgSender()){
-          require(isApprovedForAll(from, _msgSender()), 'not approved'); // _msgSender should be the market (or approved)
+          require(isApprovedForAll(from, _msgSender()), 'not approved'); // _msgSender should be the 'market' (or approved)
       }
       require(balanceOf(from, 1) - lockedShares[fraktionsIndex][from] >= numShares,"Not balance");
       lockedShares[fraktionsIndex][from] += numShares;
@@ -168,6 +167,9 @@ contract FraktalNFT is ERC1155Upgradeable {
   ///////////////////////////
   function getRevenue(uint256 index) public view returns(address){
     return revenues.get(index);
+  }
+  function getFraktions(address who) public view returns(uint){
+    return this.balanceOf(who, fraktionsIndex);
   }
   function getLockedShares(uint256 index, address who) public view returns(uint){
     return lockedShares[index][who];
