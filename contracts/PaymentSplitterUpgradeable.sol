@@ -32,6 +32,7 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     address[] private _payees;
 
     address tokenParent;
+    uint256 fraktionsIndex;
     bool public buyout;
     /**
      * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
@@ -40,12 +41,13 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
      * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
      * duplicates in `payees`.
      */
-    function init(address[] memory payees, uint256[] memory shares_, bool _buyout)
+    function init(address[] memory payees, uint256[] memory shares_, uint256 _fraktionsIndex, bool _buyout)
     external
     initializer
     {
         __PaymentSplitter_init(payees, shares_);
         tokenParent = _msgSender();
+        fraktionsIndex = _fraktionsIndex;
         buyout = _buyout;
     }
 
@@ -119,7 +121,7 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
         address payable operator = payable(_msgSender());
         require(_shares[operator] > 0, "PaymentSplitter: account has no shares");
         if(buyout){
-          uint256 bal = FraktalNFT(tokenParent).balanceOf(_msgSender(), 1);
+          uint256 bal = FraktalNFT(tokenParent).balanceOf(_msgSender(), fraktionsIndex);
           FraktalNFT(tokenParent).soldBurn(_msgSender(),1, bal);
         }
 
