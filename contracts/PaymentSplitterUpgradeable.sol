@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
-import './FraktalNFT.sol';
+import './IFraktalNFT.sol';
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -41,14 +41,14 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
      * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
      * duplicates in `payees`.
      */
-    function init(address[] memory payees, uint256[] memory shares_, uint256 _fraktionsIndex, bool _buyout)
+    function init(address[] memory payees, uint256[] memory shares_, uint256 _fraktionsIndex)
     external
     initializer
     {
         __PaymentSplitter_init(payees, shares_);
         tokenParent = _msgSender();
         fraktionsIndex = _fraktionsIndex;
-        buyout = _buyout;
+        buyout = IFraktalNFT(_msgSender()).getStatus();
     }
 
     function __PaymentSplitter_init(address[] memory payees, uint256[] memory shares_) internal initializer {
@@ -121,8 +121,8 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
         address payable operator = payable(_msgSender());
         require(_shares[operator] > 0, "PaymentSplitter: account has no shares");
         if(buyout){
-          uint256 bal = FraktalNFT(tokenParent).balanceOf(_msgSender(), fraktionsIndex);
-          FraktalNFT(tokenParent).soldBurn(_msgSender(),1, bal);
+          uint256 bal = IFraktalNFT(tokenParent).getFraktions(_msgSender());
+          IFraktalNFT(tokenParent).soldBurn(_msgSender(),1, bal);
         }
 
         uint256 totalReceived = address(this).balance + _totalReleased;

@@ -52,9 +52,15 @@ describe("Fraktal", function () {
   let fee = 1;
   let PaymentSplitter1;
   let PaymentSplitter2;
-  // beforeEach(async function () {
-  //
-  // });
+
+  afterEach(function() {
+  //   // runs after each test in this block
+       // use the block for the three types of mint (mint + import (721 & 1155))
+//     console.log('just passing');
+   });
+
+
+
   // to the market tests
   const item1price = utils.parseEther('0.02');
   const newPrice = utils.parseEther('0.025');
@@ -104,25 +110,12 @@ describe("Fraktal", function () {
       if(logs) console.log(
         `Deployed a new ERC1155 FraktalNFT at: ${Token1.address}`,
       );
-      // let minOffer = await Token1.maxPriceRegistered();
-      // if(logs) console.log('Min Offer is now:', utils.formatEther(minOffer))
       let balances = await Token1.balanceOfBatch([alice.address,alice.address, factory.address,factory.address],[0,1,0,1]);
-      console.log('balances',balances)
       expect(balances[0]).to.equal(ethers.BigNumber.from("1"));
       expect(balances[1]).to.equal(ethers.BigNumber.from("0"));
       expect(balances[2]).to.equal(ethers.BigNumber.from("0"));
       expect(balances[3]).to.equal(ethers.BigNumber.from("0"));
     });
-    // it('should allow defraktionalize', async function () {
-    //   if(logs) console.log('Alice approves the market');
-    //   await Token1.connect(alice).setApprovalForAll(factory.address, true);
-    //   if(logs) console.log('Alice defraktionalize');
-    //   await Token1.connect(alice).defraktionalize();
-    //   let balances = await Token1.balanceOfBatch([alice.address,alice.address,factory.address],[0,1,0]);
-    //   expect(balances[0]).to.equal(ethers.BigNumber.from('1'));
-    //   expect(balances[1]).to.equal(ethers.BigNumber.from('0'));
-    //   expect(balances[2]).to.equal(ethers.BigNumber.from('0'));
-    // });
     it('Should allow the minter to transfer the recently minted NFT', async function (){
       if(logs) console.log('Alice sends the nft to Bob');
       await Token1.connect(alice).safeTransferFrom(alice.address, bob.address, ethers.BigNumber.from(0), ethers.BigNumber.from(1), emptyData);
@@ -131,6 +124,12 @@ describe("Fraktal", function () {
       expect(balances[1]).to.equal(ethers.BigNumber.from('0'));
       expect(balances[2]).to.equal(ethers.BigNumber.from('1'));
       expect(balances[3]).to.equal(ethers.BigNumber.from('0'));
+    });
+    it('Should not allow to fraktionalize index 0', async function () {
+      if(logs) console.log('Bob tries to fraktionalize the nft');
+      await expect(
+        Token1.connect(bob).fraktionalize(bob.address, 0)
+      ).to.be.revertedWith('Not fraktionalizable');
     });
     it('Should allow the owner to fraktionalize it', async function () {
       if(logs) console.log('Bob fraktionalize the nft');
@@ -455,24 +454,91 @@ describe("Fraktal", function () {
       if(logs) console.log('now there is ',utils.formatEther(totalInContract),' in the contract');
       // expect(totalInContract).to.equal(ethers.BigNumber.from('0')); // never gets to 0... ???
     });
-    it('Should allow the owner to re-fraktionalize it', async function () {
-      if(logs) console.log('Deedee fraktionalize the nft');
+    it('Should allow admin to change the fee of the market', async function () {
+      let prevFee = await market.fee();
+      if(logs) console.log('Admin account sets fee in 3.14%');
+      await market.connect(owner).setFee(314);
+      let postFee = await market.fee();
+      expect(postFee).to.gt(prevFee);
+    });
+    it('Should not allow the fraktionalization of previous indexes', async function () {
+      if(logs) console.log('Deedee tries to re-use the index');
       await expect(
         Token1.connect(deedee).fraktionalize(deedee.address, 1)
-      ).to.be.revertedWith('index used')
+      ).to.be.revertedWith('index used');
+    });
+    it('Should allow the owner to change the majority value', async function () {
+      if(logs) console.log('Deedee changes the majority of the nft');
+      let prevMajority = await Token1.majority();
+      await Token1.connect(deedee).setMajority(6000);
+      let postMajority = await Token1.majority();
+      expect(prevMajority).to.gt(postMajority);
+    });
+    it('Should allow the owner to re-fraktionalize it', async function () {
+      if(logs) console.log('Deedee fraktionalize the nft');
       await Token1.connect(deedee).fraktionalize(deedee.address, 2);
       let balances = await Token1.balanceOfBatch([deedee.address,deedee.address], [0,2]);
       expect(balances[0]).to.equal(ethers.BigNumber.from('1'));
       expect(balances[1]).to.equal(ethers.BigNumber.from('10000'));
       let fraktionsIndex = await Token1.fraktionsIndex();
       if(logs) console.log('new Fraktions index: ',fraktionsIndex);
-
     });
-
+    it('Should allow the owner to send it to the market.. again', async function () {
+      if(logs) console.log('Deedee approves the market');
+      await Token1.connect(deedee).setApprovalForAll(market.address, true);
+      if(logs) console.log('DD sends the nft to the market');
+      await Token1.connect(deedee).lockSharesTransfer(deedee.address,10000,market.address);
+      await Token1.connect(deedee).safeTransferFrom(deedee.address, market.address, 0, 1, emptyData);
+      await Token1.connect(deedee).unlockSharesTransfer(market.address);
+      let balances = await Token1.balanceOfBatch([deedee.address,deedee.address, market.address], [0,2,0]);
+      expect(balances[0]).to.equal(ethers.BigNumber.from('0'));
+      expect(balances[1]).to.equal(ethers.BigNumber.from('10000'));
+      expect(balances[2]).to.equal(ethers.BigNumber.from('1'));
+    });
+    it('Should allow to list the new fraktions (same token address)', async function () {
+      let qty = 5000;
+      if(logs) console.log(`DD lists ${qty} fraktions at ${utils.formatEther(item1price)} ETH`)
+      let prevBalances = await Token1.balanceOfBatch([market.address, deedee.address],[2,2]);
+      await market.connect(deedee).listItem(
+        Token1.address,
+        item1price, // total eth/amount
+        qty); // amount
+      let listingPrice = await market.getListingPrice(deedee.address, Token1.address);
+      expect(listingPrice).to.equal(ethers.BigNumber.from(item1price));
+      let listingAmount = await market.getListingAmount(deedee.address, Token1.address);
+      expect(listingAmount).to.equal(ethers.BigNumber.from(qty));
+      let minOffer = await market.maxPriceRegistered(Token1.address);
+      if(logs) console.log('Min Offer is now:', utils.formatEther(minOffer))
+    });
+    it('Should allow other users to list the same token Fraktions', async function () {
+      if(logs) console.log('DD sends 5k Fraktions to Alice');
+      await Token1.connect(deedee).safeTransferFrom(deedee.address, alice.address, 2, 5000, emptyData);
+      if(logs) console.log('Alice lists 5k Fraktions at a different price');
+      await market.connect(alice).listItem(Token1.address, newPrice, 5000);
+      let balances = await Token1.balanceOfBatch([market.address, deedee.address, alice.address],[0,2,2]);
+      expect(balances[0]).to.equal(ethers.BigNumber.from('1'));
+      expect(balances[1]).to.equal(ethers.BigNumber.from('5000'));
+      expect(balances[2]).to.equal(ethers.BigNumber.from('5000'));
+      let listingPrice2 = await market.getListingPrice(alice.address, Token1.address);
+      expect(listingPrice2).to.equal(ethers.BigNumber.from(newPrice));
+      let listingAmount2 = await market.getListingAmount(alice.address, Token1.address);
+      expect(listingAmount2).to.equal(ethers.BigNumber.from('5000'));
+    });
+    it('Should handle buys in both listings', async function () {
+      	if(logs) console.log('Bob buys from Alice');
+	await market.connect(bob).buyFraktions(alice.address, Token1.address, 1000, {value: toPay(1000, newPrice)});
+  	if(logs) console.log('Carol buys from Deedee');
+	await market.connect(carol).buyFraktions(deedee.address, Token1.address, 2000, {value: toPay(2000, item1price)});
+	let balances = await Token1.balanceOfBatch([alice.address,bob.address,carol.address,deedee.address],[2,2,2,2]);
+	//console.log('balances',balances);
+	expect(balances[0]).to.equal(ethers.BigNumber.from('4000'));
+	expect(balances[1]).to.equal(ethers.BigNumber.from('1000'));
+	expect(balances[2]).to.equal(ethers.BigNumber.from('2000'));
+	expect(balances[3]).to.equal(ethers.BigNumber.from('3000'));
+    });
     // what else to check
-    // majority can be changed by the owner (would be interesting also to change it from the market)
-    // change fees of market
-    // import NFT's and do all over again (or add the other test files)
-    // re-fraktionalize and test all over again!
+	  //
+	  // offers handled with multiple listings
+	  // what if a send a batched tx and try to move the nft not in a first position? 
   });
 })

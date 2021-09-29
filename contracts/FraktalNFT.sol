@@ -6,6 +6,7 @@ import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol
 import "./PaymentSplitterUpgradeable.sol";
 import "./EnumerableSet.sol";
 import "./EnumerableMap.sol";
+
 contract FraktalNFT is ERC1155Upgradeable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
@@ -14,8 +15,8 @@ contract FraktalNFT is ERC1155Upgradeable {
     bool public sold;// sold will be the variable that changes power (to the buyer not specified) and allows re-fraktionalization
     uint256 public fraktionsIndex;// keep it in a new variable
     uint16 public majority; // amount threshold on voting power
-    uint256[] public initialIndexes;
-    uint256[] public amounts;
+//    uint256[] public initialIndexes;
+//    uint256[] public amounts;
     mapping (uint => bool) public indexUsed;//keep track of used indexes (if existent, and reused, dilutes amount)
     mapping(uint256=> mapping(address => uint)) lockedShares;
     /* mapping (address => uint) public lockedShares; */
@@ -82,7 +83,7 @@ contract FraktalNFT is ERC1155Upgradeable {
       if(from != _msgSender()){
           require(isApprovedForAll(from, _msgSender()), 'not approved'); // _msgSender should be the 'market' (or approved)
       }
-      require(balanceOf(from, 1) - lockedShares[fraktionsIndex][from] >= numShares,"Not balance");
+      require(balanceOf(from, fraktionsIndex) - lockedShares[fraktionsIndex][from] >= numShares,"Not balance");
       lockedShares[fraktionsIndex][from] += numShares;
       lockedToTotal[fraktionsIndex][_to] += numShares;
       emit LockedSharesForTransfer(from, _to, numShares);
@@ -106,7 +107,7 @@ contract FraktalNFT is ERC1155Upgradeable {
         }
       _clone = ClonesUpgradeable.clone(revenueChannelImplementation);
       address payable revenueContract = payable(_clone);
-      PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions, fraktionsIndex, sold);
+      PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions, fraktionsIndex);
       revenueContract.transfer(msg.value);
       uint256 index = revenues.length();
       revenues.set(index, _clone);
@@ -114,7 +115,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
 
     function sellItem() public payable {
-      require(this.balanceOf(_msgSender(),0) == 1, 'not owner'); // its the market as intermediary
+      require(this.balanceOf(_msgSender(),0) == 1, 'not owner'); // its the intermediary (that calls this function)
       sold = true;
       // fraktionalize should be then be false
       fraktionalized = false;
@@ -123,7 +124,7 @@ contract FraktalNFT is ERC1155Upgradeable {
       emit ItemSold(_msgSender(), fraktionsIndex); // this is not the buyer!!
     }
 
-    function cleanUpHolders() public
+    function cleanUpHolders() internal
     {
       uint256 listLength = holders.length();
       address[] memory remove = new address[](listLength);
@@ -176,6 +177,9 @@ contract FraktalNFT is ERC1155Upgradeable {
   }
   function getLockedToTotal(uint256 index, address who) public view returns(uint){
     return lockedToTotal[index][who];
+  }
+  function getStatus() public view returns (bool) {
+    return sold;
   }
 }
 // Helpers (send to a library?)

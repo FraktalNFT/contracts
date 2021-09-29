@@ -2,7 +2,7 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 
-const logs = true;
+const logs = false;
 const emptyData = '0x000000000000000000000000000000000000dEaD';
 const testUri = "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco";
 
@@ -69,9 +69,7 @@ describe("FraktalNFT-ERC721 handlers", function () {
   let carol;
   let deedee;
   let fee = 1;
-  // beforeEach(async function () {
-  //
-  // });
+
   const item1price = utils.parseEther('0.02');
   const newPrice = utils.parseEther('0.025');
 

@@ -11,9 +11,7 @@ import "./EnumerableMap.sol";
 
 contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
-    /* address public Fraktalimplementation; DO I NEED THIS HERE?
-    address public revenueChannelImplementation; */
-    uint256 public fee;
+    uint16 public fee;
     uint256 private feesAccrued;
     struct Proposal {
       uint256 value;
@@ -32,24 +30,22 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
 
 
     event Bought(address buyer,address seller, address tokenAddress, uint16 numberOfShares);
-    event FeeUpdated(uint256 newFee);
+    event FeeUpdated(uint16 newFee);
     event ItemListed(address owner, address tokenAddress, uint256 price, uint256 amountOfShares);
     event ItemPriceUpdated(address owner, address tokenAddress, uint256 newPrice);
     event FraktalClaimed(address owner, address tokenAddress);
     event SellerPaymentPull(address seller, uint256 balance);
     event AdminWithdrawFees(uint256 feesAccrued);
     event OfferMade(address offerer, address tokenAddress, uint256 value);
-    /* event RevenuesProtocolUpgraded(address _newAddress);
-    event FraktalProtocolUpgraded(address _newAddress); */
 
-    // change it to a initializer function
+    // change it to a initializer function?
     constructor() {
-        fee = 1;
+        fee = 100;
     }
 
 // Admin Functions
 //////////////////////////////////
-    function setFee(uint256 _newFee) external onlyOwner {
+    function setFee(uint16 _newFee) external onlyOwner {
       require(_newFee >= 0, "FraktalMarket: negative fee not acceptable");
       fee = _newFee;
       emit FeeUpdated(_newFee);
@@ -82,8 +78,9 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       require(!FraktalNFT(tokenAddress).sold(), 'item sold');
       require(listing.numberOfShares >= _numberOfShares, 'Not enough Fraktions on sale');
       uint256 buyPrice = (listing.price * _numberOfShares);
-      uint256 totalFees = buyPrice * fee / 100;
+      uint256 totalFees = buyPrice * fee / 10000;
       uint256 totalForSeller = buyPrice - totalFees;
+      uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
       require(msg.value > buyPrice, "FraktalMarket: insufficient funds");
       listing.numberOfShares = listing.numberOfShares - _numberOfShares;
       if(listing.price*10000 > maxPriceRegistered[tokenAddress]) {
@@ -92,7 +89,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       FraktalNFT(tokenAddress).safeTransferFrom(
         from,
         _msgSender(),
-        1,
+        fraktionsIndex,
         _numberOfShares,
         ""
       );
@@ -158,6 +155,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
          require(FraktalNFT(tokenAddress).getLockedToTotal(fraktionsIndex,_msgSender())>FraktalNFT(tokenAddress).majority(), 'not buyer');
          FraktalNFT(tokenAddress).createRevenuePayment{value: offer.value}();
        }
+       maxPriceRegistered[tokenAddress] = 0;
        FraktalNFT(tokenAddress).safeTransferFrom(address(this),_msgSender(),0,1,'');
        emit FraktalClaimed(_msgSender(), tokenAddress);
     }
