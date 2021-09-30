@@ -15,8 +15,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
     uint256 private feesAccrued;
     struct Proposal {
       uint256 value;
-      uint voteCount;
-      /* bool winner;  STUDY THIS TO CANCEL THE TAKE OUT OF WINNING OFFER    */
+      bool winner;
     }
     struct Listing {
       address tokenAddress;
@@ -127,6 +126,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       // sold items should allow to take out offers of losers, but block the winner and call claimFraktal
       Proposal storage prop = offers[_msgSender()][tokenAddress];
       address payable offerer = payable(_msgSender());
+      require(!prop.winner,'offer accepted');
       if (_value > prop.value) {
         require(_value >= maxPriceRegistered[tokenAddress],'Min offer');
         require(msg.value >= _value - prop.value);
@@ -135,7 +135,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       }
       offers[_msgSender()][tokenAddress] = Proposal({
         value: _value,
-        voteCount: 0
+	winner: false
         });
       emit OfferMade(_msgSender(), tokenAddress, _value);
     }
@@ -147,9 +147,9 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       uint256 votesAvailable = FraktalNFT(tokenAddress).balanceOf(_msgSender(), fraktionsIndex) - lockedShares;
       FraktalNFT(tokenAddress).lockSharesTransfer(_msgSender(),votesAvailable, offerer);
       uint lockedToOfferer = FraktalNFT(tokenAddress).getLockedToTotal(fraktionsIndex,offerer);
-      offer.voteCount = lockedToOfferer;
       if(lockedToOfferer > FraktalNFT(tokenAddress).majority()){
         FraktalNFT(tokenAddress).sellItem();
+	offer.winner = true;
       }
     }
 
@@ -193,10 +193,5 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
     function getOffer(address offerer, address tokenAddress) public view returns(uint256){
       return(offers[offerer][tokenAddress].value);
     }
-    function getVotes(address offerer, address tokenAddress) public view returns(uint256){
-      return(offers[offerer][tokenAddress].voteCount);
-    }
 }
-
-// Helpers
 //////////////////////////
