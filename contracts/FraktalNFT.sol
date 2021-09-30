@@ -15,13 +15,9 @@ contract FraktalNFT is ERC1155Upgradeable {
     bool public sold;// sold will be the variable that changes power (to the buyer not specified) and allows re-fraktionalization
     uint256 public fraktionsIndex;// keep it in a new variable
     uint16 public majority; // amount threshold on voting power
-//    uint256[] public initialIndexes;
-//    uint256[] public amounts;
     mapping (uint => bool) public indexUsed;//keep track of used indexes (if existent, and reused, dilutes amount)
     mapping(uint256=> mapping(address => uint)) lockedShares;
-    /* mapping (address => uint) public lockedShares; */
     mapping(uint256=> mapping(address => uint)) lockedToTotal;
-    /* mapping (address => uint) public lockedToTotal; */
     EnumerableSet.AddressSet private holders;
     EnumerableMap.UintToAddressMap private revenues;
 
@@ -38,15 +34,10 @@ contract FraktalNFT is ERC1155Upgradeable {
         external
         initializer
     {
-        /* initialIndexes = [0, 1]; */
-        /* amounts = [1, 10000]; */
-        /* _mintBatch(_creator, initialIndexes, amounts, ''); */
         __ERC1155_init(uri);
         _mint(_creator, 0, 1, '');//sends the 'nft' to the caller of the function
-        /* _mint(_creator, 1, 10000, '');// sends the fraktions to the 'creator' (allow multiple inputs and balances in fraktionalize) */
         fraktionalized = false;
         sold = false;
-        /* fraktionsIndex = 1; */
         majority = _majority;
         revenueChannelImplementation = _revenueChannelImplementation;
         holders.add(_creator);
@@ -107,7 +98,7 @@ contract FraktalNFT is ERC1155Upgradeable {
         }
       _clone = ClonesUpgradeable.clone(revenueChannelImplementation);
       address payable revenueContract = payable(_clone);
-      PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions, fraktionsIndex);
+      PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions);
       revenueContract.transfer(msg.value);
       uint256 index = revenues.length();
       revenues.set(index, _clone);
@@ -181,6 +172,9 @@ contract FraktalNFT is ERC1155Upgradeable {
   }
   function getStatus() public view returns (bool) {
     return sold;
+  }
+  function getFraktionsIndex() public view returns (uint256) {
+    return fraktionsIndex;
   }
 }
 // Helpers (send to a library?)

@@ -17,4 +17,5 @@ interface IFraktalNFT {
     function getLockedShares(uint256 index, address who) external view returns(uint);
     function getLockedToTotal(uint256 index, address who) external view returns(uint);
     function getStatus() external view returns (bool);
+    function getFraktionsIndex() external view returns (uint256);
 }

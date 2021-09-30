@@ -41,13 +41,13 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
      * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
      * duplicates in `payees`.
      */
-    function init(address[] memory payees, uint256[] memory shares_, uint256 _fraktionsIndex)
+    function init(address[] memory payees, uint256[] memory shares_)
     external
     initializer
     {
         __PaymentSplitter_init(payees, shares_);
         tokenParent = _msgSender();
-        fraktionsIndex = _fraktionsIndex;
+        fraktionsIndex = IFraktalNFT(_msgSender()).getFraktionsIndex();
         buyout = IFraktalNFT(_msgSender()).getStatus();
     }
 
