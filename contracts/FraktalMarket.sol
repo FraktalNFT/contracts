@@ -16,6 +16,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
     struct Proposal {
       uint256 value;
       uint voteCount;
+      /* bool winner;  STUDY THIS TO CANCEL THE TAKE OUT OF WINNING OFFER    */
     }
     struct Listing {
       address tokenAddress;
@@ -103,8 +104,10 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
         uint256 _price,
         uint16 _numberOfShares
       ) external returns (bool) {
+          uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
           require(FraktalNFT(_tokenAddress).balanceOf(address(this),0) == 1, 'nft not in market');
           require(!FraktalNFT(_tokenAddress).sold(), 'item sold');
+          require(FraktalNFT(_tokenAddress).balanceOf(_msgSender(),fraktionsIndex) >= _numberOfShares, 'no valid Fraktions');
           Listing memory listed = listings[_tokenAddress][_msgSender()];
           require(listed.numberOfShares == 0, 'unlist first');
           Listing memory listing =
@@ -120,13 +123,15 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
 
     function makeOffer(address tokenAddress, uint256 _value) public payable {
       require(msg.value >= _value, 'No pay');
+      // check interactions with sold items.. prob make a status in offers (or set winner)
+      // sold items should allow to take out offers of losers, but block the winner and call claimFraktal
       Proposal storage prop = offers[_msgSender()][tokenAddress];
       address payable offerer = payable(_msgSender());
       if (_value > prop.value) {
         require(_value >= maxPriceRegistered[tokenAddress],'Min offer');
         require(msg.value >= _value - prop.value);
       } else {
-          offerer.transfer(prop.value);
+          offerer.transfer(prop.value); // returns offer value
       }
       offers[_msgSender()][tokenAddress] = Proposal({
         value: _value,
@@ -150,12 +155,17 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
 
     function claimFraktal(address tokenAddress) external {
        uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
+       // if item is sold, then we create the last revenue payment channel
        if(FraktalNFT(tokenAddress).sold()){
          Proposal memory offer = offers[_msgSender()][tokenAddress];
          require(FraktalNFT(tokenAddress).getLockedToTotal(fraktionsIndex,_msgSender())>FraktalNFT(tokenAddress).majority(), 'not buyer');
          FraktalNFT(tokenAddress).createRevenuePayment{value: offer.value}();
+         // delete price register for future listings (different fraktionsIndex)
+         maxPriceRegistered[tokenAddress] = 0;
+
        }
-       maxPriceRegistered[tokenAddress] = 0;
+       // if is not sold, but 100% fraktions are locked, should allow to claim it to the
+       // beneficiary address
        FraktalNFT(tokenAddress).safeTransferFrom(address(this),_msgSender(),0,1,'');
        emit FraktalClaimed(_msgSender(), tokenAddress);
     }

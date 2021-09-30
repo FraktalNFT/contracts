@@ -60,28 +60,10 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
       emit Minted(_msgSender(), urlIpfs, _clone,index);
     }
 
-     /* function fraktionalize(uint256 _tokenId) public {
-      // why not call the address directly?
-      // this received the nft (was the market) and returns the fraktions
-      // fraktionalize can also be done directly with FraktalNFT.. what to do now?
-      address tokenAddress = fraktalNFTs.get(_tokenId);
-      FraktalNFT(tokenAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
-      FraktalNFT(tokenAddress).fraktionalize(_msgSender(), 1);
-      emit Fraktionalized(tokenAddress);
-    }
-    function defraktionalize(uint256 _tokenId) public {
-      // why not calling the address directly
-      // defraktionalize should be more flexible (maybe storing the current sub id of fraktions)
-      address tokenAddress = fraktalNFTs.get(_tokenId);
-      FraktalNFT(tokenAddress).safeTransferFrom(_msgSender(), address(this),1,10000,'');
-      FraktalNFT(tokenAddress).defraktionalize(1);
-      FraktalNFT(tokenAddress).safeTransferFrom(address(this), _msgSender(), 0, 1, '');
-      emit Defraktionalized(tokenAddress);
-    }  */
-
     function importERC721(address _tokenAddress, uint256 _tokenId, uint16 majority) external returns (address _clone) {
       // why dont use interfaces in here?
       // problem in claiming is the URI retrieval
+      
       /* indexes = [0,1]; */
       /* amounts = [1,10000]; */
       string memory uri = ERC721Upgradeable(_tokenAddress).tokenURI(_tokenId);
