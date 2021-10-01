@@ -15,17 +15,17 @@ contract TestTokenUpgradeable is ERC721Upgradeable {
         external
         initializer
     {
-        console.log(
+        /* console.log(
             'Deploying TestToken with name: %s and symbol: %s',
             name,
             symbol
-        );
+        ); */
         __ERC721_init(name, symbol);
     }
 
     function mint() external {
         index ++;
-        console.log("Minting tokenId '%s' to '%s'", index, _msgSender());
+        /* console.log("Minting tokenId '%s' to '%s'", index, _msgSender()); */
         _safeMint( _msgSender(), index);
     }
 }

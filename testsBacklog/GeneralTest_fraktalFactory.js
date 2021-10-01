@@ -98,7 +98,7 @@ describe("Fraktal", function () {
 
         const MarketContract = await ethers.getContractFactory("FraktalMarket");
         market = await MarketContract.deploy();
-        await market.deployed();
+       await market.deployed();
         if(logs) console.log("Market deployed to:", market.address);
         if(logs) console.log("Market owner:", await market.owner());
         expect(await market.owner()).to.equal(owner.address);
@@ -118,7 +118,7 @@ describe("Fraktal", function () {
     });
     it('Should allow the minter to transfer the recently minted NFT', async function (){
       if(logs) console.log('Alice sends the nft to Bob');
-      await Token1.connect(alice).safeTransferFrom(alice.address, bob.address, ethers.BigNumber.from(0), ethers.BigNumber.from(1), emptyData);
+      await Token1.connect(alice).safeTransferFrom(alice.address, bob.address, 0, 1, emptyData);
       let balances = await Token1.balanceOfBatch([alice.address,alice.address, bob.address, bob.address],[0,1,0,1]);
       expect(balances[0]).to.equal(ethers.BigNumber.from('0'));
       expect(balances[1]).to.equal(ethers.BigNumber.from('0'));
@@ -171,13 +171,6 @@ describe("Fraktal", function () {
       expect(balances[1]).to.equal(ethers.BigNumber.from('10000'));
       expect(balances[2]).to.equal(ethers.BigNumber.from('0'));
     }); // but if not approved, cannot move!
-    // it('should allow defraktionalize', async function () {
-    //   if(logs) console.log('Bob defraktionalize');
-    //   await Token1.connect(bob).defraktionalize(1);
-    //   let balances = await Token1.balanceOfBatch([bob.address,bob.address],[0,1]);
-    //   expect(balances[0]).to.equal(ethers.BigNumber.from('1'));
-    //   expect(balances[1]).to.equal(ethers.BigNumber.from('0'));
-    // });
     it('Should allow the owner to send it to the market', async function () {
       if(logs) console.log('Bob approves the market');
       await Token1.connect(bob).setApprovalForAll(market.address, true);
@@ -413,24 +406,23 @@ describe("Fraktal", function () {
 //      expect(votesAfter).to.be.equal(votesBefore);
     });
 
-    // it('BUG?: Should not allow to send fraktions after sell', async function () {
+    it('Should not allow to send fraktions after sell', async function () {
     //
     // // Its reverting the tx with >
     // // Error: invalid arrayify value (argument="value", value="", code=INVALID_ARGUMENT, version=bytes/5.4.0)
     //
     //   let balances = await Token1.balanceOfBatch([bob.address, alice.address],[1,1]);
     //   console.log('balances',balances)
-    //   await Token1.connect(bob).safeTransferFrom(bob.address, alice.address, 1,1,'');
+       await expect(
+	       Token1.connect(bob).safeTransferFrom(bob.address, alice.address, 1,1,'')
+	).to.be.reverted;
     //   balances = await Token1.balanceOfBatch([bob.address, alice.address],[1,1]);
     //   console.log('balances',balances)
     //   expect(balances[0]).to.equal(1);
     //   expect(balances[1]).to.equal(0);
-    // });
+    });
 
-     it('BUG: Should not allow to take out offer after sell', async function () {
-
-    //  // ITS A BUG! see solution of Proposal{bool winner}
-
+     it('Should not allow to take out offer after sell', async function () {
        if(logs) console.log('Deedee takes out its offer');
        //let deedeeEthBalance0 = await ethers.provider.getBalance(deedee.address);
        await expect(
@@ -440,7 +432,6 @@ describe("Fraktal", function () {
        //let offerValue = await market.getOffer(deedee.address, Token1.address);
        //expect(offerValue).to.equal(utils.parseEther('0'));
      });
-
     it('Should allow to claim the fraktal', async function () {
       if(logs) console.log('Deedee claims the buyed NFT');
       await market.connect(deedee).claimFraktal(Token1.address);
@@ -586,6 +577,7 @@ describe("Fraktal", function () {
     // what else to check
 	  //
 	  // offers handled with multiple listings
-	  // Taking out offers after item is sold
+	  // 
+	  // 
  });
 })

@@ -139,7 +139,8 @@ contract FraktalNFT is ERC1155Upgradeable {
     {
         super._beforeTokenTransfer(operator,from, to, tokenId,amount,data);
         if(from != address(0) && to != address(0)){ // avoid mint & burn transfers
-          // study this!! its naturally wrong but the 'correct way' fails
+          // study this!! it seems wrong but the 'correct way' fails
+	  // with 'calling balanceOf zero address'
           if(tokenId[0] == 0){ // nft transfer (subid 0)
             if(fraktionalized == true && sold == false){
               require((lockedToTotal[fraktionsIndex][to] > 9999), "not approval");
@@ -150,7 +151,7 @@ contract FraktalNFT is ERC1155Upgradeable {
               (balanceOf(from, tokenId[0]) - lockedShares[fraktionsIndex][from] >= amount[0]),
                 "amount wrong"
             );
-            //require(sold != true, 'item is sold'); // sold items block the transfer of fraktions (does not allow to release payment.. and burn them)
+            //require(sold != true, 'item is sold'); // sold items block the transfer of fraktions (does not allow to release payment.. and burn them)	   
           }
           holders.add(to);
         }
