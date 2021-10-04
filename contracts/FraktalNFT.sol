@@ -68,11 +68,14 @@ contract FraktalNFT is ERC1155Upgradeable {
       _burn(_msgSender(), fraktionsIndex, 10000);
     }
     function soldBurn(address owner, uint256 _tokenId, uint256 bal) public {
+      if(_msgSender() != owner){
+        require(isApprovedForAll(owner, _msgSender()), 'not approved');
+      }
       _burn(owner, _tokenId, bal);
     }
     function lockSharesTransfer(address from, uint numShares, address _to) public {
       if(from != _msgSender()){
-          require(isApprovedForAll(from, _msgSender()), 'not approved'); // _msgSender should be the 'market' (or approved)
+          require(isApprovedForAll(from, _msgSender()), 'not approved');
       }
       require(balanceOf(from, fraktionsIndex) - lockedShares[fraktionsIndex][from] >= numShares,"Not balance");
       lockedShares[fraktionsIndex][from] += numShares;
@@ -106,6 +109,9 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
 
     function sellItem() public payable {
+      //this could have and address as arg
+      // and a require of lockedToTotal to confirm with fraktions
+      // but if so, majority counts.. and the owner can change it.. 
       require(this.balanceOf(_msgSender(),0) == 1, 'not owner'); // its the intermediary (that calls this function)
       sold = true;
       // fraktionalize should be then be false
@@ -140,18 +146,18 @@ contract FraktalNFT is ERC1155Upgradeable {
         super._beforeTokenTransfer(operator,from, to, tokenId,amount,data);
         if(from != address(0) && to != address(0)){ // avoid mint & burn transfers
           // study this!! it seems wrong but the 'correct way' fails
-	  // with 'calling balanceOf zero address'
+	        // with 'calling balanceOf zero address'
           if(tokenId[0] == 0){ // nft transfer (subid 0)
             if(fraktionalized == true && sold == false){
               require((lockedToTotal[fraktionsIndex][to] > 9999), "not approval");
             }
           }
           else{
+            require(sold != true, 'item is sold'); 
             require(
               (balanceOf(from, tokenId[0]) - lockedShares[fraktionsIndex][from] >= amount[0]),
                 "amount wrong"
             );
-            //require(sold != true, 'item is sold'); // sold items block the transfer of fraktions (does not allow to release payment.. and burn them)	   
           }
           holders.add(to);
         }

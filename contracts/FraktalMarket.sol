@@ -7,10 +7,7 @@ import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./EnumerableMap.sol";
-
 contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
-    using EnumerableMap for EnumerableMap.UintToAddressMap;
     uint16 public fee;
     uint256 private feesAccrued;
     struct Proposal {
@@ -22,7 +19,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       uint256 price;
       uint16 numberOfShares;
     }
-    /* EnumerableMap.UintToAddressMap private fraktalNFTs; */
     mapping(address=> mapping(address => Listing)) listings;
     mapping (address => mapping(address => Proposal)) public offers;
     mapping (address => uint256) public sellersBalance;
@@ -38,7 +34,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
     event AdminWithdrawFees(uint256 feesAccrued);
     event OfferMade(address offerer, address tokenAddress, uint256 value);
 
-    // change it to a initializer function?
     constructor() {
         fee = 100;
     }
@@ -58,7 +53,11 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       feesAccrued = 0;
       return true;
     }
-
+// Fallback
+//////////////////////////////////
+    receive() external payable {
+      feesAccrued += msg.value;
+    }
 // Users Functions
 //////////////////////////////////
     function rescueEth() public nonReentrant {
@@ -122,8 +121,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
 
     function makeOffer(address tokenAddress, uint256 _value) public payable {
       require(msg.value >= _value, 'No pay');
-      // check interactions with sold items.. prob make a status in offers (or set winner)
-      // sold items should allow to take out offers of losers, but block the winner and call claimFraktal
       Proposal storage prop = offers[_msgSender()][tokenAddress];
       address payable offerer = payable(_msgSender());
       require(!prop.winner,'offer accepted');
@@ -155,24 +152,18 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
 
     function claimFraktal(address tokenAddress) external {
        uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
-       // if item is sold, then we create the last revenue payment channel
        if(FraktalNFT(tokenAddress).sold()){
          Proposal memory offer = offers[_msgSender()][tokenAddress];
          require(FraktalNFT(tokenAddress).getLockedToTotal(fraktionsIndex,_msgSender())>FraktalNFT(tokenAddress).majority(), 'not buyer');
          FraktalNFT(tokenAddress).createRevenuePayment{value: offer.value}();
-         // delete price register for future listings (different fraktionsIndex)
          maxPriceRegistered[tokenAddress] = 0;
 
        }
-       // if is not sold, but 100% fraktions are locked, should allow to claim it to the
-       // beneficiary address
        FraktalNFT(tokenAddress).safeTransferFrom(address(this),_msgSender(),0,1,'');
        emit FraktalClaimed(_msgSender(), tokenAddress);
     }
 
     function unlistItem(address tokenAddress) external {
-      uint amount = getListingAmount(_msgSender(), tokenAddress); // needed?
-      require(amount > 0, 'You have no listed Fraktions with this id'); // ??
       delete listings[tokenAddress][_msgSender()];
       emit ItemListed(_msgSender(), tokenAddress, 0, 0);
     }
@@ -194,4 +185,3 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       return(offers[offerer][tokenAddress].value);
     }
 }
-//////////////////////////
