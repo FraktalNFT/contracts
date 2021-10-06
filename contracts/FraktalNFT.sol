@@ -4,18 +4,18 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol';
 import "./PaymentSplitterUpgradeable.sol";
-import "./EnumerableSet.sol";
-import "./EnumerableMap.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract FraktalNFT is ERC1155Upgradeable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     address revenueChannelImplementation;
-    bool fraktionalized;//fraktionalization could also be an index (sub Id) of fraktions in current valid power
-    bool public sold;// sold will be the variable that changes power (to the buyer not specified) and allows re-fraktionalization
-    uint256 public fraktionsIndex;// keep it in a new variable
+    bool fraktionalized;
+    bool public sold;
+    uint256 public fraktionsIndex;
     uint16 public majority; // amount threshold on voting power
-    mapping (uint => bool) public indexUsed;//keep track of used indexes (if existent, and reused, dilutes amount)
+    mapping (uint => bool) public indexUsed;
     mapping(uint256=> mapping(address => uint)) lockedShares;
     mapping(uint256=> mapping(address => uint)) lockedToTotal;
     EnumerableSet.AddressSet private holders;
@@ -83,12 +83,15 @@ contract FraktalNFT is ERC1155Upgradeable {
       emit LockedSharesForTransfer(from, _to, numShares);
     }
 
-    function unlockSharesTransfer(address _to) public {
+    function unlockSharesTransfer(address from, address _to) public {
       require(!sold, 'item sold');
-      uint balance = lockedShares[fraktionsIndex][_msgSender()];
-      lockedShares[fraktionsIndex][_msgSender()] -= balance;
+      if(from != _msgSender()){
+          require(isApprovedForAll(from, _msgSender()), 'not approved');
+      }
+      uint balance = lockedShares[fraktionsIndex][from];
+      lockedShares[fraktionsIndex][from] -= balance;
       lockedToTotal[fraktionsIndex][_to] -= balance;
-      emit unLockedSharesForTransfer( _msgSender(), _to, 0);
+      emit unLockedSharesForTransfer( from, _to, 0);
     }
 
     function createRevenuePayment() public payable returns (address _clone){
@@ -109,16 +112,11 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
 
     function sellItem() public payable {
-      //this could have and address as arg
-      // and a require of lockedToTotal to confirm with fraktions
-      // but if so, majority counts.. and the owner can change it.. 
-      require(this.balanceOf(_msgSender(),0) == 1, 'not owner'); // its the intermediary (that calls this function)
+      require(this.balanceOf(_msgSender(),0) == 1, 'not owner');
       sold = true;
-      // fraktionalize should be then be false
       fraktionalized = false;
-      // and lock the index for future fraktionalizations
       indexUsed[fraktionsIndex] = true;
-      emit ItemSold(_msgSender(), fraktionsIndex); // this is not the buyer!!
+      emit ItemSold(_msgSender(), fraktionsIndex);
     }
 
     function cleanUpHolders() internal
@@ -127,7 +125,7 @@ contract FraktalNFT is ERC1155Upgradeable {
       address[] memory remove = new address[](listLength);
       uint16 removeIndex = 0;
       for (uint i=0; i<listLength; i++){
-        uint256 bal = this.balanceOf(holders.at(i), fraktionsIndex);//
+        uint256 bal = this.balanceOf(holders.at(i), fraktionsIndex);
         if(bal < 1){
           remove[removeIndex]= holders.at(i);
           removeIndex++;
@@ -152,8 +150,8 @@ contract FraktalNFT is ERC1155Upgradeable {
               require((lockedToTotal[fraktionsIndex][to] > 9999), "not approval");
             }
           }
-          else{
-            require(sold != true, 'item is sold'); 
+          else{ //fraktions transfers
+            require(sold != true, 'item is sold');
             require(
               (balanceOf(from, tokenId[0]) - lockedShares[fraktionsIndex][from] >= amount[0]),
                 "amount wrong"
@@ -163,7 +161,7 @@ contract FraktalNFT is ERC1155Upgradeable {
         }
     }
 
-  // Getters (which ones are needed?)
+  // Getters
   ///////////////////////////
   function getRevenue(uint256 index) public view returns(address){
     return revenues.get(index);
@@ -184,13 +182,3 @@ contract FraktalNFT is ERC1155Upgradeable {
     return fraktionsIndex;
   }
 }
-// Helpers (send to a library?)
-////////////////////////////
-/* function toUint256(bytes memory _bytes)
-internal
-pure
-returns (uint256 value) {
-assembly {
-value := mload(add(_bytes, 0x20))
-}
-} */

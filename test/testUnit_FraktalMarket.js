@@ -2,7 +2,7 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 
-const logs = false; 
+const logs = false;
 ///////////////////////////////////////////////////////////////////////CONSTANTS
 const emptyData = '0x000000000000000000000000000000000000dEaD';
 const testUri = "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco";
@@ -94,7 +94,7 @@ describe("Fraktal Market", function () {
     if(logs) console.log(
       `Deployed a new ERC1155 FraktalNFT at: ${Token.address}`,
     );
-    await Token.connect(alice).fraktionalize(alice.address, 1);
+    // await Token.connect(alice).fraktionalize(alice.address, 1);
   });
   describe('Market deployment & config', async function () {
     it('Should deploy to the correct owner', async function () {
@@ -122,10 +122,11 @@ describe("Fraktal Market", function () {
     it('Should allow the owner to send it to the market', async function () {
       if(logs) console.log('Alice approves the market');
       await Token.connect(alice).setApprovalForAll(market.address, true);
-      if(logs) console.log('Bob sends the nft through the market');
-      await Token.connect(alice).lockSharesTransfer(alice.address,10000,market.address);
-      await Token.connect(alice).safeTransferFrom(alice.address, market.address, 0, 1, emptyData);
-      await Token.connect(alice).unlockSharesTransfer(market.address);
+      if(logs) console.log('Alice sends the nft through the market');
+      await market.connect(alice).importFraktal(Token.address, 1)
+      // await Token.connect(alice).lockSharesTransfer(alice.address,10000,market.address);
+      // await Token.connect(alice).safeTransferFrom(alice.address, market.address, 0, 1, emptyData);
+      // await Token.connect(alice).unlockSharesTransfer(alice.address,market.address);
       let balances = await Token.balanceOfBatch([alice.address,alice.address, market.address], [0,1,0]);
       expect(balances[0]).to.equal(ethers.BigNumber.from('0'));
       expect(balances[1]).to.equal(ethers.BigNumber.from('10000'));
@@ -266,7 +267,7 @@ describe("Fraktal Market", function () {
     it('Should not allow to unlock fraktions once sold', async function (){
       if(logs) console.log('Alice tries to unlock fraktions');
       await expect(
-        Token.connect(alice).unlockSharesTransfer(deedee.address)
+        Token.connect(alice).unlockSharesTransfer(alice.address,deedee.address)
       ).to.be.revertedWith('item sold');
     });
     it('Should not allow to send fraktions after sell', async function () {
@@ -343,12 +344,13 @@ describe("Fraktal Market", function () {
     });
     it('Should allow the owner to send it to the market.. again', async function () {
        if(logs) console.log('Deedee approves the market');
-	await Token.connect(deedee).fraktionalize(deedee.address, 2);
+	      // await Token.connect(deedee).fraktionalize(deedee.address, 2);
        await Token.connect(deedee).setApprovalForAll(market.address, true);
        if(logs) console.log('DD sends the nft to the market');
-       await Token.connect(deedee).lockSharesTransfer(deedee.address,10000,market.address);
-       await Token.connect(deedee).safeTransferFrom(deedee.address, market.address, 0, 1, emptyData);
-       await Token.connect(deedee).unlockSharesTransfer(market.address);
+       await market.connect(deedee).importFraktal(Token.address, 2)
+       // await Token.connect(deedee).lockSharesTransfer(deedee.address,10000,market.address);
+       // await Token.connect(deedee).safeTransferFrom(deedee.address, market.address, 0, 1, emptyData);
+       // await Token.connect(deedee).unlockSharesTransfer(deedee.address,market.address);
        let balances = await Token.balanceOfBatch([deedee.address,deedee.address, market.address], [0,2,0]);
        expect(balances[0]).to.equal(ethers.BigNumber.from('0'));
        expect(balances[1]).to.equal(ethers.BigNumber.from('10000'));
@@ -397,8 +399,8 @@ describe("Fraktal Market", function () {
          expect(balances[3]).to.equal(ethers.BigNumber.from('3000'));
          });
     // what else to test?
-	  // 
- 
+	  //
+
     // Admin functions
     it('Should allow the admin to take the accrued fees', async function () {
       let totalInContract = await ethers.provider.getBalance(market.address);

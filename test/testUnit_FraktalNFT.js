@@ -140,7 +140,7 @@ describe("Fraktal NFT", function () {
         await Token.connect(bob).lockSharesTransfer(bob.address, 10000, alice.address);
         await Token.connect(bob).safeTransferFrom(bob.address, alice.address, 0,1,emptyData);
         if(logs) console.log('Bob unlocks all fraktions');
-        await Token.connect(bob).unlockSharesTransfer(alice.address);
+        await Token.connect(bob).unlockSharesTransfer(bob.address,alice.address);
         let balances = await Token.balanceOfBatch([bob.address,bob.address, alice.address, alice.address],[0,1,0,1]);
         expect(balances[0]).to.equal(ethers.BigNumber.from('0'));
         expect(balances[1]).to.equal(ethers.BigNumber.from('10000'));
@@ -157,7 +157,7 @@ describe("Fraktal NFT", function () {
         await Token.connect(bob).lockSharesTransfer(bob.address, 10000, bob.address);
         if(logs) console.log('Alice transfers fraktal');
         await Token.connect(alice).safeTransferFrom(alice.address, bob.address,0,1,emptyData);
-        await Token.connect(bob).unlockSharesTransfer(bob.address);
+        await Token.connect(bob).unlockSharesTransfer(bob.address,bob.address);
         let balances = await Token.balanceOfBatch([bob.address,bob.address, alice.address],[0,1,0]);
         expect(balances[0]).to.equal(ethers.BigNumber.from('1'));
         expect(balances[1]).to.equal(ethers.BigNumber.from('10000'));

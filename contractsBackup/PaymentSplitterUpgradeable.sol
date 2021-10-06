@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
-import './FraktalNFT.sol';
+import './IFraktalNFT.sol';
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -32,6 +32,7 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     address[] private _payees;
 
     address tokenParent;
+    uint256 fraktionsIndex;
     bool public buyout;
     /**
      * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
@@ -40,13 +41,14 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
      * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
      * duplicates in `payees`.
      */
-    function init(address[] memory payees, uint256[] memory shares_, bool _buyout)
+    function init(address[] memory payees, uint256[] memory shares_)
     external
     initializer
     {
         __PaymentSplitter_init(payees, shares_);
         tokenParent = _msgSender();
-        buyout = _buyout;
+        fraktionsIndex = IFraktalNFT(_msgSender()).getFraktionsIndex();
+        buyout = IFraktalNFT(_msgSender()).getStatus();
     }
 
     function __PaymentSplitter_init(address[] memory payees, uint256[] memory shares_) internal initializer {
@@ -119,8 +121,8 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
         address payable operator = payable(_msgSender());
         require(_shares[operator] > 0, "PaymentSplitter: account has no shares");
         if(buyout){
-          uint256 bal = FraktalNFT(tokenParent).balanceOf(_msgSender(), 1);
-          FraktalNFT(tokenParent).soldBurn(_msgSender(),1, bal);
+          uint256 bal = IFraktalNFT(tokenParent).getFraktions(_msgSender());
+          IFraktalNFT(tokenParent).soldBurn(_msgSender(),fraktionsIndex, bal);
         }
 
         uint256 totalReceived = address(this).balance + _totalReleased;

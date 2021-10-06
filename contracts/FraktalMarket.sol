@@ -68,6 +68,12 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       sellersBalance[_msgSender()] = 0;
       emit SellerPaymentPull(_msgSender(), balance);
     }
+    function importFraktal(address tokenAddress, uint256 fraktionsIndex) public {
+      FraktalNFT(tokenAddress).safeTransferFrom(_msgSender(), address(this), 0, 1, '');
+      FraktalNFT(tokenAddress).fraktionalize(_msgSender(),fraktionsIndex);
+      FraktalNFT(tokenAddress).lockSharesTransfer(_msgSender(), 10000, address(this));
+      FraktalNFT(tokenAddress).unlockSharesTransfer(_msgSender(), address(this));
+    }
     function buyFraktions(address from, address tokenAddress, uint16 _numberOfShares)
       external
       payable
@@ -128,7 +134,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
         require(_value >= maxPriceRegistered[tokenAddress],'Min offer');
         require(msg.value >= _value - prop.value);
       } else {
-          offerer.transfer(prop.value); // returns offer value
+          offerer.transfer(prop.value);
       }
       offers[_msgSender()][tokenAddress] = Proposal({
         value: _value,
@@ -145,8 +151,8 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       FraktalNFT(tokenAddress).lockSharesTransfer(_msgSender(),votesAvailable, offerer);
       uint lockedToOfferer = FraktalNFT(tokenAddress).getLockedToTotal(fraktionsIndex,offerer);
       if(lockedToOfferer > FraktalNFT(tokenAddress).majority()){
-        FraktalNFT(tokenAddress).sellItem();
-	offer.winner = true;
+         FraktalNFT(tokenAddress).sellItem();
+	       offer.winner = true;
       }
     }
 
