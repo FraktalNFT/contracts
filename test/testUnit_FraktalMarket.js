@@ -2,7 +2,7 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 
-const logs = false;
+const logs = true;
 ///////////////////////////////////////////////////////////////////////CONSTANTS
 const emptyData = '0x000000000000000000000000000000000000dEaD';
 const testUri = "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco";
