@@ -7,7 +7,9 @@ import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, Initializable {
     uint16 public fee;
     uint256 private feesAccrued;
     struct Proposal {
@@ -17,7 +19,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
     struct Listing {
       address tokenAddress;
       uint256 price;
-      uint16 numberOfShares;
+      uint256 numberOfShares;
     }
     mapping(address=> mapping(address => Listing)) listings;
     mapping (address => mapping(address => Proposal)) public offers;
@@ -25,17 +27,21 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
     mapping (address => uint256) public maxPriceRegistered;
 
 
-    event Bought(address buyer,address seller, address tokenAddress, uint16 numberOfShares);
+    event Bought(address buyer,address seller, address tokenAddress, uint256 numberOfShares);
     event FeeUpdated(uint16 newFee);
     event ItemListed(address owner, address tokenAddress, uint256 price, uint256 amountOfShares);
-    event ItemPriceUpdated(address owner, address tokenAddress, uint256 newPrice);
     event FraktalClaimed(address owner, address tokenAddress);
     event SellerPaymentPull(address seller, uint256 balance);
     event AdminWithdrawFees(uint256 feesAccrued);
     event OfferMade(address offerer, address tokenAddress, uint256 value);
 
-    constructor() {
-        fee = 100;
+
+// change to an initializer
+    /* constructor() {
+        fee = 100; //1%
+    } */
+    function initialize() public initializer {
+      fee = 100; //1%
     }
 
 // Admin Functions
@@ -55,9 +61,9 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
     }
 // Fallback
 //////////////////////////////////
-    receive() external payable {
+    /* receive() external payable {
       feesAccrued += msg.value;
-    }
+    } */
 // Users Functions
 //////////////////////////////////
     function rescueEth() public nonReentrant {
@@ -74,7 +80,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       FraktalNFT(tokenAddress).lockSharesTransfer(_msgSender(), 10000, address(this));
       FraktalNFT(tokenAddress).unlockSharesTransfer(_msgSender(), address(this));
     }
-    function buyFraktions(address from, address tokenAddress, uint16 _numberOfShares)
+    function buyFraktions(address from, address tokenAddress, uint256 _numberOfShares)
       external
       payable
       nonReentrant
@@ -86,7 +92,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       uint256 totalFees = buyPrice * fee / 10000;
       uint256 totalForSeller = buyPrice - totalFees;
       uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
-      require(msg.value > buyPrice, "FraktalMarket: insufficient funds");
+      require(msg.value >= buyPrice, "FraktalMarket: insufficient funds");
       listing.numberOfShares = listing.numberOfShares - _numberOfShares;
       if(listing.price*10000 > maxPriceRegistered[tokenAddress]) {
         maxPriceRegistered[tokenAddress] = listing.price*10000;
@@ -106,7 +112,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
     function listItem(
         address _tokenAddress,
         uint256 _price,
-        uint16 _numberOfShares
+        uint256 _numberOfShares
       ) external returns (bool) {
           uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
           require(FraktalNFT(_tokenAddress).balanceOf(address(this),0) == 1, 'nft not in market');
@@ -138,7 +144,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder {
       }
       offers[_msgSender()][tokenAddress] = Proposal({
         value: _value,
-	winner: false
+	      winner: false
         });
       emit OfferMade(_msgSender(), tokenAddress, _value);
     }

@@ -15,7 +15,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     bool public sold;
     uint256 public fraktionsIndex;
     uint16 public majority; // amount threshold on voting power
-    mapping (uint => bool) public indexUsed;
+    mapping (uint256 => bool) public indexUsed;
     mapping(uint256=> mapping(address => uint)) lockedShares;
     mapping(uint256=> mapping(address => uint)) lockedToTotal;
     EnumerableSet.AddressSet private holders;
@@ -26,6 +26,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     event ItemSold(address buyer, uint256 indexUsed);
     event NewRevenueAdded(address payer, address revenueChannel, uint256 amount, bool sold);
     event Fraktionalized(address holder, address minter, uint256 index);
+    event Defraktionalized(address holder, uint256 index);
     event MajorityValueChanged(uint16 newValue);
 
     constructor() initializer {}
@@ -58,14 +59,15 @@ contract FraktalNFT is ERC1155Upgradeable {
       _mint(_to, _tokenId, 10000, 'fraktions');
       emit Fraktionalized(_msgSender(), _to, _tokenId);
     }
+    function defraktionalize() public {
+      fraktionalized = false;
+      _burn(_msgSender(), fraktionsIndex, 10000);
+      emit Defraktionalized(_msgSender(), fraktionsIndex);
+    }
     function setMajority(uint16 newValue) public {
       require(this.balanceOf(_msgSender(),0) == 1, 'not owner');
       majority = newValue;
       emit MajorityValueChanged(newValue);
-    }
-    function defraktionalize() public {
-      fraktionalized = false;
-      _burn(_msgSender(), fraktionsIndex, 10000);
     }
     function soldBurn(address owner, uint256 _tokenId, uint256 bal) public {
       if(_msgSender() != owner){

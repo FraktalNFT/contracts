@@ -17,7 +17,7 @@ function toPay(qty, price) {
   if(logs) console.log('qty', parseFloat(qty));
   const toPayWei = priceN * parseFloat(qty);
   // const toPayWfees = toPayWei + (toPayWei * fee/100) + 0.0001; // extra for gas errors
-  const toPayFixed = toPayWei + 0.0001; // sum a little for errors in gas??? CAUTION
+  const toPayFixed = toPayWei //+ 0.0001; // sum a little for errors in gas??? CAUTION
   // if(logs) console.log('total ',toPayWfees);
   return utils.parseEther(toPayFixed.toString());
 }
@@ -59,11 +59,11 @@ describe("Fraktal Market", function () {
   let IPaymentSplitter;
 
   let factory;
+  let marketProxy;
 
   let Token;
   let PaymentSplitter1;
   let PaymentSplitter2;
-
   let owner;
   let alice;
   let bob;
@@ -102,11 +102,17 @@ describe("Fraktal Market", function () {
       const MarketContract = await ethers.getContractFactory("FraktalMarket");
       market = await MarketContract.deploy();
       await market.deployed();
+      await market.connect(owner).initialize();
       if(logs) console.log("Market deployed to:", market.address);
       if(logs) console.log("Market owner:", await market.owner());
       expect(await market.owner()).to.equal(owner.address);
       expect(await market.fee()).to.equal(defaultFee);
     });
+    // it('Should deploy a proxy for the market', async function () {
+    //   const TransparentUpgradeableProxy = await ethers.getContractFactory('TransparentUpgradeableProxy');
+    //   marketProxy = await TransparentUpgradeableProxy.deploy(market.address, owner.address, '0x');
+    //   if(logs) console.log('Deployed proxy at',marketProxy.address)
+    // });
     it('Should allow only the owner to set market fee', async function () {
       // fee is uint16 (max 10000) so try to break it!! (>10k would be a fee of >100%)
       let newFee = 1000;
@@ -400,7 +406,12 @@ describe("Fraktal Market", function () {
          });
     // what else to test?
 	  //
-
+    it('Should allow sellers whitdraw', async function () {
+      if(logs) console.log('Bob buys from Alice');
+      await market.connect(alice).rescueEth();
+      if(logs) console.log('Carol buys from Deedee');
+      await market.connect(deedee).rescueEth();
+    });
     // Admin functions
     it('Should allow the admin to take the accrued fees', async function () {
       let totalInContract = await ethers.provider.getBalance(market.address);
