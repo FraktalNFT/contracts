@@ -1,0 +1,81 @@
+
+
+  Fraktal Factory
+    Deployment
+      ✔ Should deploy to the correct owner (61ms)
+      ✔ Set the Fraktal implementation (123ms)
+      ✔ Set the Payment Splitter implementation (42ms)
+    Functions
+      ✔ Should mint a Fraktal to the minter (71ms)
+      ✔ Should allow to lock ERC721 tokens to the FraktalFactory. (142ms)
+      ✔ Should not be claimable by anyone..
+      ✔ Should allow to whitdraw the locked nft (67ms)
+      ✔ Should allow to lock ERC1155 tokens to the FraktalFactory. (136ms)
+      ✔ Should allow to whitdraw the locked nft (64ms)
+
+  Fraktal Market
+    Market deployment & config
+      ✔ Should deploy to the correct owner (49ms)
+      ✔ Should allow only the owner to set market fee
+    Functions
+      ✔ Should allow the owner to send it to the market (77ms)
+      ✔ Should not allow to list more than balance
+      ✔ Should allow to list the fraktions (45ms)
+      ✔ Should allow buy fraktions listed (76ms)
+      ✔ Should allow to retrieve minimum offer
+      ✔ Should allow to make offers
+      ✔ Should allow to take out an offer
+      ✔ should allow to unlist the fraktions
+      ✔ should not allow to buy unlisted items
+      ✔ should allow to re list items (44ms)
+      ✔ Should allow to buy fraktions at new price (66ms)
+      ✔ Should allow to retrieve new minimum offer
+      ✔ should allow to rescue gains
+      ✔ Should allow to make offers (62ms)
+      ✔ Should allow to vote on offers (44ms)
+      ✔ Should sell if > majority (44ms)
+      ✔ Should not allow anyone to claim the fraktal
+      ✔ Should not allow to unlock fraktions once sold
+      ✔ Should not allow to send fraktions after sell
+      ✔ Should allow not winners to take out offers
+      ✔ Should not allow buyer to take out offer after sell
+      ✔ Should not allow to list fraktions of used indexes
+      ✔ Should allow to claim the fraktal (91ms)
+      ✔ Should allow not winners to take out offers
+      ✔ Should not allow to list fraktions of NFT not in the market
+      ✔ should allow to retrieve the gains and burn the fraktions (105ms)
+      ✔ Should allow the owner to send it to the market.. again (85ms)
+      ✔ Should allow to list the new fraktions (same token address) (42ms)
+      ✔ Should allow other users to list the same token Fraktions (80ms)
+      ✔ Should handle buys in both listings (68ms)
+      ✔ Should allow the admin to take the accrued fees
+
+  Fraktal NFT
+    Functions
+      ✔ Should mint a Fraktal to the minter (40ms)
+      ✔ Should allow the minter to transfer the recently minted NFT
+      ✔ Should not allow to fraktionalize index 0
+      ✔ Should not allow anyone (not owner) to fraktionalize
+      ✔ Should allow the owner to fraktionalize it
+      ✔ Should allow the owner to change the majority value
+      ✔ should not be able to send the nft after
+      ✔ should allow if consent on locking fraktions (53ms)
+      ✔ should not allow the receiver to transfer
+      ✔ should be movable by receiver if consent though (45ms)
+      ✔ should allow defraktionalize
+      ✔ Should allow the owner to fraktionalize it again (index not used)
+      ✔ Should allow to send the fraktions
+      ✔ Should not allow to burn other peoples fraktions
+      ✔ should not allow to move the Fraktal in a batched transaction
+      ✔ Should allow to create a Revenue stream to fraktion holders (69ms)
+      ✔ should allow (only owner) to sell the item
+      ✔ should not allow to send fraktions of a sold item
+      ✔ Should allow to send the nft
+      ✔ Should not allow the fraktionalization of previous indexes
+      ✔ Should allow the owner to re-fraktionalize it
+    Payment Splitter
+      ✔ Should allow owners to retire its gains
+
+
+  64 passing (5s)
+

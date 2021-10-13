@@ -4,6 +4,7 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
+require("@nomiclabs/hardhat-ethers");
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -11,17 +12,22 @@ async function main() {
   //
   // If this script is run directly using `node` you may want to call compile
   // manually to make sure everything is compiled
-  await hre.run('compile');
+  // await hre.run('compile');
+  const [deployer] = await ethers.getSigners();
 
-  // We get the contract to deploy
   const TokenLogicContract = await hre.ethers.getContractFactory("FraktalNFT");
   const logicContract = await TokenLogicContract.deploy();
   await logicContract.deployed();
   console.log("FraktalNFT deployed to:", logicContract.address);
-  const MarketContract = await hre.ethers.getContractFactory("FraktalMarket");
-  const marketContract = await MarketContract.deploy(logicContract.address);
-  await marketContract.deployed();
-  console.log("Market deployed to:", marketContract.address);
+  // We get the contract to deploy
+  // const TokenLogicContract = await hre.ethers.getContractFactory("FraktalNFT");
+  // const logicContract = await TokenLogicContract.deploy();
+  // await logicContract.deployed();
+  // console.log("FraktalNFT deployed to:", logicContract.address);
+  // const MarketContract = await hre.ethers.getContractFactory("FraktalMarket");
+  // const marketContract = await MarketContract.deploy(logicContract.address);
+  // await marketContract.deployed();
+  // console.log("Market deployed to:", marketContract.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
