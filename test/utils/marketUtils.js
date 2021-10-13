@@ -1,11 +1,15 @@
-// const { ethers } = require("hardhat");
-const { utils } = ethers;
+const { utils } = require('ethers');
+const { log } = require('./testUtils');
 
-
-export function toPay(qty, price) {
+const toPay = (qty, price) => {
   const priceN = utils.formatEther(price);
   const toPayWei = priceN * parseFloat(qty);
-  const toPayFixed = toPayWei + 0.0000000001; // sum a little for errors in gas??? CAUTION
-  // if(logs) console.log('total ',toPayWfees);
+  // TODO sum a little for errors in gas??? CAUTION
+  const toPayFixed = toPayWei;// + 0.0000000001;
+  log(`total: ${toPayFixed}`);
   return utils.parseEther(toPayFixed.toString());
-}
+};
+
+module.exports = {
+  toPay,
+};
