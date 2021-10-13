@@ -210,7 +210,4 @@ describe("Fraktal NFT", function () {
     log(`new Fraktions index: ${fraktionsIndex}`);
     expect(fraktionsIndex).to.be.equal(newIndex);
   });
-  // TODO sell item to
-  // TODO check sells with & without value
-  // TODO The fraktal owner (even if lended) can sellItem and setMajority.. CAREFUL HERE!!!
 });

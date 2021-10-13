@@ -84,7 +84,7 @@ describe("Payment Splitter", function () {
     await PaymentSplitter1.connect(alice).release();
     let aliceEthBalance2 = await ethers.provider.getBalance(alice.address);
     log(`Alice has now ${utils.formatEther(aliceEthBalance2)} ETH`);
-    expect(aliceEthBalance2).to.gt(aliceEthBalance1);  // 'Alice couldnt withdraw'
+    expect(aliceEthBalance2).to.gt(aliceEthBalance1);
   });
   it('BUYOUT: Should allow owners to retire its gains and burn the fraktions', async function () {
     await Token.connect(bob).setApprovalForAll(PaymentSplitter2.address, true);
@@ -101,6 +101,6 @@ describe("Payment Splitter", function () {
     await PaymentSplitter2.connect(alice).release();
     let aliceEthBalance2 = await ethers.provider.getBalance(alice.address);
     log(`Alice has now ${utils.formatEther(aliceEthBalance2)} ETH`);
-    expect(aliceEthBalance2).to.gt(aliceEthBalance1);  // 'Alice couldnt withdraw'
+    expect(aliceEthBalance2).to.gt(aliceEthBalance1);
   });
 });

@@ -1,6 +1,5 @@
 const { expect } = require('chai'); //, describe, before, it
 const { ethers } = require('hardhat');
-// const { awaitTokenAddress } = require('./utils/txHelpers');
 const { log } = require('./utils/testUtils');
 const {
   getDeployedContract,
@@ -49,7 +48,6 @@ describe('Fraktal Market - Deploy', function () {
     );
     log(`Factory owner: ${await factory.owner()}`);
     Token = await mintFraktal(factory, logicContract, alice);
-    // await Token.connect(alice).fraktionalize(alice.address, 1);
   });
 
   it('Should deploy to the correct owner', async function () {
@@ -61,7 +59,6 @@ describe('Fraktal Market - Deploy', function () {
     expect(await market.fee()).to.equal(defaultFee);
   });
   it('Should allow only the owner to set market fee', async function () {
-    // fee is uint16 (max 10000) so try to break it!! (>10k would be a fee of >100%)
     let newFee = 1000;
     await expect(market.connect(alice).setFee(newFee)).to.be.reverted;
     await market.connect(owner).setFee(newFee);

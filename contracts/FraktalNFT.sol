@@ -14,7 +14,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     bool fraktionalized;
     bool public sold;
     uint256 public fraktionsIndex;
-    uint16 public majority; // amount threshold on voting power
+    uint16 public majority;
     mapping (uint256 => bool) public indexUsed;
     mapping(uint256=> mapping(address => uint)) lockedShares;
     mapping(uint256=> mapping(address => uint)) lockedToTotal;
@@ -36,7 +36,7 @@ contract FraktalNFT is ERC1155Upgradeable {
         initializer
     {
         __ERC1155_init(uri);
-        _mint(_creator, 0, 1, '');//sends the 'nft' to the caller of the function
+        _mint(_creator, 0, 1, '');
         fraktionalized = false;
         sold = false;
         majority = _majority;
@@ -48,7 +48,6 @@ contract FraktalNFT is ERC1155Upgradeable {
   // User Functions
   ///////////////////////////
     function fraktionalize(address _to, uint _tokenId) public {
-      // allow multiple input address to send the fraktions?
       require(_tokenId != 0, 'Not fraktionalizable');
       require(this.balanceOf(_msgSender(), 0) == 1, 'not owner');
       require(fraktionalized == false, 'fraktionalized');
@@ -144,15 +143,13 @@ contract FraktalNFT is ERC1155Upgradeable {
         internal virtual override
     {
         super._beforeTokenTransfer(operator,from, to, tokenId,amount,data);
-        if(from != address(0) && to != address(0)){ // avoid mint & burn transfers
-          // study this!! it seems wrong but the 'correct way' fails
-	        // with 'calling balanceOf zero address'
-          if(tokenId[0] == 0){ // nft transfer (subid 0)
+        if(from != address(0) && to != address(0)){
+          if(tokenId[0] == 0){
             if(fraktionalized == true && sold == false){
               require((lockedToTotal[fraktionsIndex][to] > 9999), "not approval");
             }
           }
-          else{ //fraktions transfers
+          else{
             require(sold != true, 'item is sold');
             require(
               (balanceOf(from, tokenId[0]) - lockedShares[fraktionsIndex][from] >= amount[0]),

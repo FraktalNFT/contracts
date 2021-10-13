@@ -4,7 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import './FraktalNFT.sol';
 import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol"; // change to interface
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -16,9 +16,9 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
     address public revenueChannelImplementation;
     EnumerableMap.UintToAddressMap private fraktalNFTs;
     mapping (address => address) public lockedERC721s;
-    mapping (address => uint256) public lockedERC721indexes; // careful with overflow
+    mapping (address => uint256) public lockedERC721indexes;
     mapping (address => address) public lockedERC1155s;
-    mapping (address => uint256) public lockedERC1155indexes; // careful with overflow
+    mapping (address => uint256) public lockedERC1155indexes;
 
     event Minted(address creator,string urlIpfs,address tokenAddress,uint256 nftId);
     event ERC721Locked(address locker, address tokenAddress, address fraktal, uint256 tokenId);
@@ -28,7 +28,6 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
     event RevenuesProtocolUpgraded(address _newAddress);
     event FraktalProtocolUpgraded(address _newAddress);
 
-    // change it to a initializer function > when Clone proxy (if needed)
     constructor(address _implementation, address _revenueChannelImplementation) {
         Fraktalimplementation = _implementation;
         revenueChannelImplementation = _revenueChannelImplementation;
@@ -36,7 +35,6 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
 
 // Admin Functions
 //////////////////////////////////
-    // this.. (could be an array to have history)
     function setFraktalImplementation(address _newAddress) external onlyOwner {
       Fraktalimplementation = _newAddress;
       emit FraktalProtocolUpgraded(_newAddress);
@@ -75,9 +73,6 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
       emit ERC1155Locked(_msgSender(), _tokenAddress, _clone, _tokenId);
     }
     function claimERC721(uint256 _tokenId) external {
-      // why dont use interfaces in here? is it possible to have one interface for both schemas?
-      // if so, reduce our counters (lockedERC and lockedERCindexes)
-      // problem in claiming is the safeTransferFrom vs transferFrom
       address fraktalAddress = fraktalNFTs.get(_tokenId);
       address collateralNft = lockedERC721s[fraktalAddress];
       uint256 index = lockedERC721indexes[collateralNft];
@@ -88,7 +83,6 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
       emit ERC721UnLocked(_msgSender(), _tokenId, collateralNft, index);
     }
     function claimERC1155(uint256 _tokenId) external {
-      // why dont use interfaces in here?
       address fraktalAddress = fraktalNFTs.get(_tokenId);
       address collateralNft = lockedERC1155s[fraktalAddress];
       uint256 index = lockedERC1155indexes[collateralNft];

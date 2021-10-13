@@ -35,11 +35,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, Initializable
     event AdminWithdrawFees(uint256 feesAccrued);
     event OfferMade(address offerer, address tokenAddress, uint256 value);
 
-
-// change to an initializer
-    /* constructor() {
-        fee = 100; //1%
-    } */
     function initialize() public initializer {
       fee = 100; //1%
     }
@@ -59,11 +54,6 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, Initializable
       feesAccrued = 0;
       return true;
     }
-// Fallback
-//////////////////////////////////
-    /* receive() external payable {
-      feesAccrued += msg.value;
-    } */
 // Users Functions
 //////////////////////////////////
     function rescueEth() public nonReentrant {
