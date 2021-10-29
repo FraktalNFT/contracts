@@ -1,5 +1,5 @@
-pragma solidity >=0.8.0 <0.9.0;
-//SPDX-License-Identifier: UNLICENSED
+//SPDX-License-Identifier: Unlicensed
+pragma solidity ^0.8.0;
 
 import './FraktalNFT.sol';
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
@@ -42,7 +42,7 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, Initializable
 // Admin Functions
 //////////////////////////////////
     function setFee(uint16 _newFee) external onlyOwner {
-      require(_newFee >= 0, "FraktalMarket: negative fee not acceptable");
+
       fee = _newFee;
       emit FeeUpdated(_newFee);
     }

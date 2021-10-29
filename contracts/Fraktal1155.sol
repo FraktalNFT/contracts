@@ -113,7 +113,6 @@ contract Contract is Ownable, ReentrancyGuard, ERC1155Holder {
 
   // set fee for owner
   function setFee(uint256 _newFee) external onlyOwner {
-    require(_newFee >= 0, "FraktalMarket: negative fee not acceptable");
     fee = _newFee;
     emit FeeUpdated(_newFee);
   }

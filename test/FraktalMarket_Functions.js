@@ -78,7 +78,8 @@ describe('Fraktal Market - Functions', function () {
     await expect(
       market.connect(bob).listItem(Token.address, item1price, 10001),
     ).to.be.revertedWith('no valid Fraktions');
-  });
+	});
+	
   it('Should allow to list the fraktions', async function () {
     let qty = 5000;
     log(`Alice lists ${qty} fraktions at ${utils.formatEther(item1price)} ETH`);
@@ -97,7 +98,8 @@ describe('Fraktal Market - Functions', function () {
       Token.address,
     );
     expect(listingAmount).to.equal(ethers.BigNumber.from(qty));
-  });
+	});
+	
   it('Should allow buy fraktions listed', async function () {
     let prevBalances = await Token.balanceOfBatch(
       [carol.address, alice.address],
@@ -121,14 +123,16 @@ describe('Fraktal Market - Functions', function () {
     log(`Alice has now a balance of ${utils.formatEther(sellerBalance)} ETH`);
     expect(balances[1]).to.equal(prevBalances[1] - qty);
     expect(balances[0]).to.equal(qty);
-  });
+	});
+	
   it('Should allow to retrieve minimum offer', async function () {
     const minOffer = await market.maxPriceRegistered(Token.address);
     log('Min Offer is now:', utils.formatEther(minOffer));
     expect(minOffer).to.equal(
       utils.parseEther((utils.formatEther(item1price) * 10000).toString()),
     );
-  });
+	});
+	
   it('Should allow to make offers', async function () {
     log('Deedee makes an offer on the token');
     await market
@@ -138,7 +142,8 @@ describe('Fraktal Market - Functions', function () {
       });
     let offerValue = await market.getOffer(deedee.address, Token.address);
     expect(offerValue).to.equal(utils.parseEther('200'));
-  });
+	});
+	
   it('Should allow to take out an offer', async function () {
     log('Deedee takes the offer out');
     let deedeeEthBalance0 = await ethers.provider.getBalance(deedee.address);
@@ -151,7 +156,8 @@ describe('Fraktal Market - Functions', function () {
     let offerValue = await market.getOffer(deedee.address, Token.address);
     expect(offerValue).to.equal(utils.parseEther('0'));
     assert(deedeeEthBalance1 > deedeeEthBalance0, 'offer not taken');
-  });
+	});
+	
   it('should allow to unlist the fraktions', async function () {
     log('Alice unlist the items');
     await market.connect(alice).unlistItem(Token.address);
@@ -160,7 +166,8 @@ describe('Fraktal Market - Functions', function () {
       Token.address,
     );
     expect(listingAmount).to.equal(ethers.BigNumber.from('0'));
-  });
+	});
+	
   it('should not allow to buy unlisted items', async function () {
     log('Bob tries to buy');
     await expect(
@@ -168,7 +175,8 @@ describe('Fraktal Market - Functions', function () {
         value: toPay(10, item1price),
       }),
     ).to.be.revertedWith('Not enough Fraktions on sale');
-  });
+	});
+	
   it('should allow to re list items', async function () {
     let qty = await Token.balanceOf(alice.address, 1);
     log(`Alice list ${qty} the items with new price`);
@@ -183,7 +191,8 @@ describe('Fraktal Market - Functions', function () {
       Token.address,
     );
     expect(listingAmount).to.equal(ethers.BigNumber.from(qty));
-  });
+	});
+	
   it('Should allow to buy fraktions at new price', async function () {
     log('Carol tries to buy it at old price');
     await expect(
@@ -202,7 +211,8 @@ describe('Fraktal Market - Functions', function () {
     );
     expect(balances[0]).to.equal(ethers.BigNumber.from('3100'));
     expect(balances[1]).to.equal(ethers.BigNumber.from('6900'));
-  });
+	});
+	
   it('Should allow to retrieve new minimum offer', async function () {
     // ? minOffer but function is called maxPriceRegistered?
     const minOffer = await market.maxPriceRegistered(Token.address);
