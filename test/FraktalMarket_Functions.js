@@ -73,6 +73,33 @@ describe('Fraktal Market - Functions', function () {
     expect(balances[1]).to.equal(ethers.BigNumber.from('10000'));
     expect(balances[2]).to.equal(ethers.BigNumber.from('1'));
   });
+  it('Should allow the owner to defraktionalize', async function () {
+    log('Bob tries to export the fraktal')
+    await expect(
+      market.connect(bob).exportFraktal(Token.address)
+    ).to.be.revertedWith('ERC1155: caller is not owner nor approved')
+    log('Alice defraks');
+    await market.connect(alice).exportFraktal(Token.address);
+    let balances = await Token.balanceOfBatch(
+      [alice.address, alice.address, market.address],
+      [0, 1, 0],
+    );
+    expect(balances[0]).to.equal(ethers.BigNumber.from('1'));
+    expect(balances[1]).to.equal(ethers.BigNumber.from('0'));
+    expect(balances[2]).to.equal(ethers.BigNumber.from('0'));
+  });
+  it('Should allow the owner to re import in the market (repeated fraktionsIndex)', async function () {
+    log('Alice sends the nft through the market');
+    await market.connect(alice).importFraktal(Token.address, 1);
+    let balances = await Token.balanceOfBatch(
+      [alice.address, alice.address, market.address],
+      [0, 1, 0],
+    );
+    expect(balances[0]).to.equal(ethers.BigNumber.from('0'));
+    expect(balances[1]).to.equal(ethers.BigNumber.from('10000'));
+    expect(balances[2]).to.equal(ethers.BigNumber.from('1'));
+  });
+
   it('Should not allow to list more than balance', async function () {
     log('Alice tries to list more than its balance');
     await expect(
