@@ -49,6 +49,7 @@ contract FraktalMarket is
   event SellerPaymentPull(address seller, uint256 balance);
   event AdminWithdrawFees(uint256 feesAccrued);
   event OfferMade(address offerer, address tokenAddress, uint256 value);
+  event OfferVoted(address voter, address offerer, address tokenAddress, bool sold);
 
   function initialize() public initializer {
     fee = 100; //1%
@@ -165,6 +166,13 @@ contract FraktalMarket is
     return true;
   }
 
+  function exportFraktal(address tokenAddress) public {
+    uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
+    FraktalNFT(tokenAddress).safeTransferFrom(_msgSender(), address(this), fraktionsIndex, 10000, '');
+    FraktalNFT(tokenAddress).defraktionalize();
+    FraktalNFT(tokenAddress).safeTransferFrom(address(this), _msgSender(), 0, 1, '');
+  }
+
   function makeOffer(address tokenAddress, uint256 _value) public payable {
     require(msg.value >= _value, "No pay");
     Proposal storage prop = offers[_msgSender()][tokenAddress];
@@ -209,6 +217,7 @@ contract FraktalMarket is
       FraktalNFT(tokenAddress).sellItem();
       offer.winner = true;
     }
+    emit OfferVoted(_msgSender(), offerer, tokenAddress, sold);
   }
 
   function claimFraktal(address tokenAddress) external {
