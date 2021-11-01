@@ -213,9 +213,11 @@ contract FraktalMarket is
       fraktionsIndex,
       offerer
     );
+    bool sold = false;
     if (lockedToOfferer > FraktalNFT(tokenAddress).majority()) {
       FraktalNFT(tokenAddress).sellItem();
       offer.winner = true;
+      sold = true;
     }
     emit OfferVoted(_msgSender(), offerer, tokenAddress, sold);
   }
