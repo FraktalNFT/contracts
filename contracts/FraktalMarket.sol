@@ -42,7 +42,8 @@ contract FraktalMarket is Ownable, ReentrancyGuard, ERC1155Holder, Initializable
 // Admin Functions
 //////////////////////////////////
     function setFee(uint16 _newFee) external onlyOwner {
-
+      require(_newFee >= 0, "FraktalMarket: negative fee not acceptable");
+			require(_newFee < 10000, "New Fee Value out of logical bounds");
       fee = _newFee;
       emit FeeUpdated(_newFee);
     }
