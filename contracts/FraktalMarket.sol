@@ -80,7 +80,7 @@ contract FraktalMarket is
 
   // Users Functions
   //////////////////////////////////
-  function rescueEth() public nonReentrant {
+  function rescueEth() external nonReentrant {
     require(sellersBalance[_msgSender()] > 0, "You dont have any to claim");
     address payable seller = payable(_msgSender());
     uint256 balance = sellersBalance[_msgSender()];
@@ -89,7 +89,9 @@ contract FraktalMarket is
     emit SellerPaymentPull(_msgSender(), balance);
   }
 
-  function importFraktal(address tokenAddress, uint256 fraktionsIndex) public {
+  function importFraktal(address tokenAddress, uint256 fraktionsIndex)
+    external
+  {
     FraktalNFT(tokenAddress).safeTransferFrom(
       _msgSender(),
       address(this),
@@ -193,7 +195,7 @@ contract FraktalMarket is
     emit OfferMade(_msgSender(), tokenAddress, _value);
   }
 
-  function voteOffer(address offerer, address tokenAddress) public {
+  function voteOffer(address offerer, address tokenAddress) external {
     uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
     Proposal storage offer = offers[offerer][tokenAddress];
     uint256 lockedShares = FraktalNFT(tokenAddress).getLockedShares(
@@ -253,12 +255,12 @@ contract FraktalMarket is
 
   // GETTERS
   //////////////////////////////////
-  function getFee() public view returns (uint256) {
+  function getFee() external view returns (uint256) {
     return (fee);
   }
 
   function getListingPrice(address _listOwner, address tokenAddress)
-    public
+    external
     view
     returns (uint256)
   {
@@ -266,19 +268,19 @@ contract FraktalMarket is
   }
 
   function getListingAmount(address _listOwner, address tokenAddress)
-    public
+    external
     view
     returns (uint256)
   {
     return listings[tokenAddress][_listOwner].numberOfShares;
   }
 
-  function getSellerBalance(address _who) public view returns (uint256) {
+  function getSellerBalance(address _who) external view returns (uint256) {
     return (sellersBalance[_who]);
   }
 
   function getOffer(address offerer, address tokenAddress)
-    public
+    external
     view
     returns (uint256)
   {

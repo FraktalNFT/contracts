@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import './IFraktalNFT.sol';
+import "./IFraktalNFT.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -20,137 +20,156 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * function.
  */
 contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
-    event PayeeAdded(address account, uint256 shares);
-    event PaymentReleased(address to, uint256 amount);
-    event PaymentReceived(address from, uint256 amount);
+  event PayeeAdded(address account, uint256 shares);
+  event PaymentReleased(address to, uint256 amount);
+  event PaymentReceived(address from, uint256 amount);
 
-    uint256 private _totalShares;
-    uint256 private _totalReleased;
+  uint256 private _totalShares;
+  uint256 private _totalReleased;
 
-    mapping(address => uint256) private _shares;
-    mapping(address => uint256) private _released;
-    address[] private _payees;
+  mapping(address => uint256) private _shares;
+  mapping(address => uint256) private _released;
+  address[] private _payees;
 
-    address tokenParent;
-    uint256 fraktionsIndex;
-    bool public buyout;
-    /**
-     * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
-     * the matching position in the `shares` array.
-     *
-     * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
-     * duplicates in `payees`.
-     */
-    function init(address[] memory payees, uint256[] memory shares_)
+  address tokenParent;
+  uint256 fraktionsIndex;
+  bool public buyout;
+
+  /**
+   * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
+   * the matching position in the `shares` array.
+   *
+   * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
+   * duplicates in `payees`.
+   */
+  function init(address[] memory payees, uint256[] memory shares_)
     external
     initializer
-    {
-        __PaymentSplitter_init(payees, shares_);
-        tokenParent = _msgSender();
-        fraktionsIndex = IFraktalNFT(_msgSender()).getFraktionsIndex();
-        buyout = IFraktalNFT(_msgSender()).getStatus();
+  {
+    __PaymentSplitter_init(payees, shares_);
+    tokenParent = _msgSender();
+    fraktionsIndex = IFraktalNFT(_msgSender()).getFraktionsIndex();
+    buyout = IFraktalNFT(_msgSender()).getStatus();
+  }
+
+  function __PaymentSplitter_init(
+    address[] memory payees,
+    uint256[] memory shares_
+  ) internal initializer {
+    __Context_init_unchained();
+    __PaymentSplitter_init_unchained(payees, shares_);
+  }
+
+  function __PaymentSplitter_init_unchained(
+    address[] memory payees,
+    uint256[] memory shares_
+  ) internal initializer {
+    require(
+      payees.length == shares_.length,
+      "PaymentSplitter: payees and shares length mismatch"
+    );
+    require(payees.length > 0, "PaymentSplitter: no payees");
+
+    for (uint256 i = 0; i < payees.length; i++) {
+      _addPayee(payees[i], shares_[i]);
+    }
+  }
+
+  /**
+   * @dev The Ether received will be logged with {PaymentReceived} events. Note that these events are not fully
+   * reliable: it's possible for a contract to receive Ether without triggering this function. This only affects the
+   * reliability of the events, and not the actual splitting of Ether.
+   *
+   * To learn more about this see the Solidity documentation for
+   * https://solidity.readthedocs.io/en/latest/contracts.html#fallback-function[fallback
+   * functions].
+   */
+  receive() external payable virtual {
+    emit PaymentReceived(_msgSender(), msg.value);
+  }
+
+  /**
+   * @dev Getter for the total shares held by payees.
+   */
+  function totalShares() external view returns (uint256) {
+    return _totalShares;
+  }
+
+  /**
+   * @dev Getter for the total amount of Ether already released.
+   */
+  function totalReleased() external view returns (uint256) {
+    return _totalReleased;
+  }
+
+  /**
+   * @dev Getter for the amount of shares held by an account.
+   */
+  function shares(address account) external view returns (uint256) {
+    return _shares[account];
+  }
+
+  /**
+   * @dev Getter for the amount of Ether already released to a payee.
+   */
+  function released(address account) external view returns (uint256) {
+    return _released[account];
+  }
+
+  /**
+   * @dev Getter for the address of the payee number `index`.
+   */
+  function payee(uint256 index) external view returns (address) {
+    return _payees[index];
+  }
+
+  /**
+   * @dev Triggers a transfer to `account` of the amount of Ether they are owed, according to their percentage of the
+   * total shares and their previous withdrawals.
+   */
+  function release() external virtual {
+    address payable operator = payable(_msgSender());
+    require(_shares[operator] > 0, "PaymentSplitter: account has no shares");
+    if (buyout) {
+      uint256 bal = IFraktalNFT(tokenParent).getFraktions(_msgSender());
+      IFraktalNFT(tokenParent).soldBurn(_msgSender(), fraktionsIndex, bal);
     }
 
-    function __PaymentSplitter_init(address[] memory payees, uint256[] memory shares_) internal initializer {
-        __Context_init_unchained();
-        __PaymentSplitter_init_unchained(payees, shares_);
-    }
+    uint256 totalReceived = address(this).balance + _totalReleased;
+    uint256 payment = (totalReceived * _shares[operator]) /
+      _totalShares -
+      _released[operator];
 
-    function __PaymentSplitter_init_unchained(address[] memory payees, uint256[] memory shares_) internal initializer {
-        require(payees.length == shares_.length, "PaymentSplitter: payees and shares length mismatch");
-        require(payees.length > 0, "PaymentSplitter: no payees");
+    require(payment != 0, "PaymentSplitter: operator is not due payment");
 
-        for (uint256 i = 0; i < payees.length; i++) {
-            _addPayee(payees[i], shares_[i]);
-        }
-    }
+    _released[operator] = _released[operator] + payment;
+    _totalReleased = _totalReleased + payment;
 
-    /**
-     * @dev The Ether received will be logged with {PaymentReceived} events. Note that these events are not fully
-     * reliable: it's possible for a contract to receive Ether without triggering this function. This only affects the
-     * reliability of the events, and not the actual splitting of Ether.
-     *
-     * To learn more about this see the Solidity documentation for
-     * https://solidity.readthedocs.io/en/latest/contracts.html#fallback-function[fallback
-     * functions].
-     */
-    receive() external payable virtual {
-        emit PaymentReceived(_msgSender(), msg.value);
-    }
+    AddressUpgradeable.sendValue(operator, payment);
+    emit PaymentReleased(operator, payment);
+  }
 
-    /**
-     * @dev Getter for the total shares held by payees.
-     */
-    function totalShares() public view returns (uint256) {
-        return _totalShares;
-    }
+  /**
+   * @dev Add a new payee to the contract.
+   * @param account The address of the payee to add.
+   * @param shares_ The number of shares owned by the payee.
+   */
+  function _addPayee(address account, uint256 shares_) private {
+    require(
+      account != address(0),
+      "PaymentSplitter: account is the zero address"
+    );
+    require(shares_ > 0, "PaymentSplitter: shares are 0");
+    require(
+      _shares[account] == 0,
+      "PaymentSplitter: account already has shares"
+    );
 
-    /**
-     * @dev Getter for the total amount of Ether already released.
-     */
-    function totalReleased() public view returns (uint256) {
-        return _totalReleased;
-    }
+    _payees.push(account);
+    _shares[account] = shares_;
+    _totalShares = _totalShares + shares_;
+    emit PayeeAdded(account, shares_);
+  }
 
-    /**
-     * @dev Getter for the amount of shares held by an account.
-     */
-    function shares(address account) public view returns (uint256) {
-        return _shares[account];
-    }
-
-    /**
-     * @dev Getter for the amount of Ether already released to a payee.
-     */
-    function released(address account) public view returns (uint256) {
-        return _released[account];
-    }
-
-    /**
-     * @dev Getter for the address of the payee number `index`.
-     */
-    function payee(uint256 index) public view returns (address) {
-        return _payees[index];
-    }
-
-    /**
-     * @dev Triggers a transfer to `account` of the amount of Ether they are owed, according to their percentage of the
-     * total shares and their previous withdrawals.
-     */
-    function release() public virtual {
-        address payable operator = payable(_msgSender());
-        require(_shares[operator] > 0, "PaymentSplitter: account has no shares");
-        if(buyout){
-          uint256 bal = IFraktalNFT(tokenParent).getFraktions(_msgSender());
-          IFraktalNFT(tokenParent).soldBurn(_msgSender(),fraktionsIndex, bal);
-        }
-
-        uint256 totalReceived = address(this).balance + _totalReleased;
-        uint256 payment = (totalReceived * _shares[operator]) / _totalShares - _released[operator];
-
-        require(payment != 0, "PaymentSplitter: operator is not due payment");
-
-        _released[operator] = _released[operator] + payment;
-        _totalReleased = _totalReleased + payment;
-
-        AddressUpgradeable.sendValue(operator, payment);
-        emit PaymentReleased(operator, payment);
-    }
-
-    /**
-     * @dev Add a new payee to the contract.
-     * @param account The address of the payee to add.
-     * @param shares_ The number of shares owned by the payee.
-     */
-    function _addPayee(address account, uint256 shares_) private {
-        require(account != address(0), "PaymentSplitter: account is the zero address");
-        require(shares_ > 0, "PaymentSplitter: shares are 0");
-        require(_shares[account] == 0, "PaymentSplitter: account already has shares");
-
-        _payees.push(account);
-        _shares[account] = shares_;
-        _totalShares = _totalShares + shares_;
-        emit PayeeAdded(account, shares_);
-    }
-    uint256[45] private __gap;
+  uint256[45] private __gap;
 }
