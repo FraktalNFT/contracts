@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol';
 import "./PaymentSplitterUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
@@ -106,7 +107,8 @@ contract FraktalNFT is ERC1155Upgradeable {
       _clone = ClonesUpgradeable.clone(revenueChannelImplementation);
       address payable revenueContract = payable(_clone);
       PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions);
-      revenueContract.transfer(msg.value);
+			uint256 bufferedValue = msg.value;
+			AddressUpgradeable.sendValue(revenueContract, bufferedValue);
       uint256 index = revenues.length();
       revenues.set(index, _clone);
       emit NewRevenueAdded(_msgSender(), revenueContract, msg.value, sold);
