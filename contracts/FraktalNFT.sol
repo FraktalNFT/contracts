@@ -62,7 +62,7 @@ contract FraktalNFT is ERC1155Upgradeable {
 
   // User Functions
   ///////////////////////////
-  function fraktionalize(address _to, uint256 _tokenId) public {
+  function fraktionalize(address _to, uint256 _tokenId) external {
     require(_tokenId != 0, "Not fraktionalizable");
     require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
     require(fraktionalized == false, "fraktionalized");
@@ -74,13 +74,13 @@ contract FraktalNFT is ERC1155Upgradeable {
     emit Fraktionalized(_msgSender(), _to, _tokenId);
   }
 
-  function defraktionalize() public {
+  function defraktionalize() external {
     fraktionalized = false;
     _burn(_msgSender(), fraktionsIndex, 10000);
     emit Defraktionalized(_msgSender(), fraktionsIndex);
   }
 
-  function setMajority(uint16 newValue) public {
+  function setMajority(uint16 newValue) external {
     require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
     require(newValue < 10000, "Required Fraktions argument out of bounds");
     majority = newValue;
@@ -91,7 +91,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     address owner,
     uint256 _tokenId,
     uint256 bal
-  ) public {
+  ) external {
     if (_msgSender() != owner) {
       require(isApprovedForAll(owner, _msgSender()), "not approved");
     }
@@ -102,7 +102,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     address from,
     uint256 numShares,
     address _to
-  ) public {
+  ) external {
     if (from != _msgSender()) {
       require(isApprovedForAll(from, _msgSender()), "not approved");
     }
@@ -116,7 +116,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     emit LockedSharesForTransfer(from, _to, numShares);
   }
 
-  function unlockSharesTransfer(address from, address _to) public {
+  function unlockSharesTransfer(address from, address _to) external {
     require(!sold, "item sold");
     if (from != _msgSender()) {
       require(isApprovedForAll(from, _msgSender()), "not approved");
@@ -127,7 +127,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     emit unLockedSharesForTransfer(from, _to, 0);
   }
 
-  function createRevenuePayment() public payable returns (address _clone) {
+  function createRevenuePayment() external payable returns (address _clone) {
     cleanUpHolders();
     address[] memory owners = holders.values();
     uint256 listLength = holders.length();
@@ -145,7 +145,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     emit NewRevenueAdded(_msgSender(), revenueContract, msg.value, sold);
   }
 
-  function sellItem() public payable {
+  function sellItem() external payable {
     require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
     sold = true;
     fraktionalized = false;
@@ -199,16 +199,16 @@ contract FraktalNFT is ERC1155Upgradeable {
 
   // Getters
   ///////////////////////////
-  function getRevenue(uint256 index) public view returns (address) {
+  function getRevenue(uint256 index) external view returns (address) {
     return revenues.get(index);
   }
 
-  function getFraktions(address who) public view returns (uint256) {
+  function getFraktions(address who) external view returns (uint256) {
     return this.balanceOf(who, fraktionsIndex);
   }
 
   function getLockedShares(uint256 index, address who)
-    public
+    external
     view
     returns (uint256)
   {
@@ -216,18 +216,18 @@ contract FraktalNFT is ERC1155Upgradeable {
   }
 
   function getLockedToTotal(uint256 index, address who)
-    public
+    external
     view
     returns (uint256)
   {
     return lockedToTotal[index][who];
   }
 
-  function getStatus() public view returns (bool) {
+  function getStatus() external view returns (bool) {
     return sold;
   }
 
-  function getFraktionsIndex() public view returns (uint256) {
+  function getFraktionsIndex() external view returns (uint256) {
     return fraktionsIndex;
   }
 }
