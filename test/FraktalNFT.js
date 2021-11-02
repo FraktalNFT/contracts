@@ -63,7 +63,7 @@ describe("Fraktal NFT", function () {
     log('Bob tries to fraktionalize the nft');
     await expect(
         Token.connect(bob).fraktionalize(bob.address, 0)
-      ).to.be.revertedWith('Not fraktionalizable');
+      ).to.be.revertedWith('NFT');
   });
   it('Should not allow anyone (not owner) to fraktionalize', async function () {
     log('Bob tries to fraktionalize the nft');

@@ -63,14 +63,14 @@ contract FraktalNFT is ERC1155Upgradeable {
   // User Functions
   ///////////////////////////
   function fraktionalize(address _to, uint256 _tokenId) external {
-    require(_tokenId != 0, "Not fraktionalizable");
+    require(_tokenId != 0, "NFT");
     require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
     require(fraktionalized == false, "fraktionalized");
     require(indexUsed[_tokenId] == false, "index used");
     fraktionalized = true;
     sold = false;
     fraktionsIndex = _tokenId;
-    _mint(_to, _tokenId, 10000, "fraktions");
+    _mint(_to, _tokenId, 10000, "");
     emit Fraktionalized(_msgSender(), _to, _tokenId);
   }
 
@@ -82,7 +82,7 @@ contract FraktalNFT is ERC1155Upgradeable {
 
   function setMajority(uint16 newValue) external {
     require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
-    require(newValue < 10000, "Required Fraktions argument out of bounds");
+    require(newValue < 10000, "Incorrect value");
     majority = newValue;
     emit MajorityValueChanged(newValue);
   }
@@ -186,7 +186,7 @@ contract FraktalNFT is ERC1155Upgradeable {
           require((lockedToTotal[fraktionsIndex][to] > 9999), "not approval");
         }
       } else {
-        require(sold != true, "item is sold");
+        require(sold != true, "item sold");
         require(
           (balanceOf(from, tokenId[0]) - lockedShares[fraktionsIndex][from] >=
             amount[0]),
