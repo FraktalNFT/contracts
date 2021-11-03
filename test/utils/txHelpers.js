@@ -16,7 +16,6 @@ const awaitTokenAddress = async (tx) => {
   );
   return decodedLog.tokenAddress;
 };
-
 const awaitERC721TokenAddress = async (tx) => {
   const receipt = await tx.wait();
   const abi = new ethers.utils.Interface(['event NewToken(address token)']);

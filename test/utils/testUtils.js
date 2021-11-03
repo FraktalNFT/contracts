@@ -1,7 +1,7 @@
 const { ethers } = require('hardhat');
 const { utils } = ethers;
 
-const logs = false;
+const logs = true;
 const emptyData = '0x000000000000000000000000000000000000dEaD';
 const emptyAddress = '0x0000000000000000000000000000000000000000';
 const testUri = 'QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco';
