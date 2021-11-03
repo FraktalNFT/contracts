@@ -176,43 +176,31 @@ describe("Fraktal Factory", function () {
       const importTokenAddress5 = await awaitTokenAddress(importERC721Tx5);
       const importTokenAddress6 = await awaitTokenAddress(importERC721Tx6);
 
-      let test1 = await factory.getFraktalAddress(0);
-      log('test1',test1)
-      let test2 = await factory.getFraktalAddress(1);
-      log('test2',test2)
-      let test3 = await factory.getFraktalAddress(2);
-      log('test3',test3)
+      // let test1 = await factory.getFraktalAddress(0);
+      // log('test1',test1)
+      // let test2 = await factory.getFraktalAddress(1);
+      // log('test2',test2)
+      // let test3 = await factory.getFraktalAddress(2);
+      // log('test3',test3)
 
       TokenFromERC721 =
         FraktalImplementationContract.attach(importTokenAddress);
       log(`Deployed a new ERC1155 FraktalNFT at: ${TokenFromERC721.address}`);
-      let fraktalsTotal = await factory.getFraktalsLength();
-      log('total locked',fraktalsTotal);
       Token2FromERC721 =
         FraktalImplementationContract.attach(importTokenAddress2);
       log(`Deployed a new ERC1155 FraktalNFT at: ${Token2FromERC721.address}`);
-      fraktalsTotal = await factory.getFraktalsLength();
-      log('total locked',fraktalsTotal);
       Token3FromERC721 =
         FraktalImplementationContract.attach(importTokenAddress3);
       log(`Deployed a new ERC1155 FraktalNFT at: ${Token3FromERC721.address}`);
-      fraktalsTotal = await factory.getFraktalsLength();
-      log('total locked',fraktalsTotal);
       Token4FromERC721 =
         FraktalImplementationContract.attach(importTokenAddress4);
       log(`Deployed a new ERC1155 FraktalNFT at: ${Token4FromERC721.address}`);
-      fraktalsTotal = await factory.getFraktalsLength();
-      log('total locked',fraktalsTotal);
       Token5FromERC721 =
         FraktalImplementationContract.attach(importTokenAddress5);
       log(`Deployed a new ERC1155 FraktalNFT at: ${Token5FromERC721.address}`);
-      fraktalsTotal = await factory.getFraktalsLength();
-      log('total locked',fraktalsTotal);
       Token6FromERC721 =
         FraktalImplementationContract.attach(importTokenAddress6);
       log(`Deployed a new ERC1155 FraktalNFT at: ${Token6FromERC721.address}`);
-      fraktalsTotal = await factory.getFraktalsLength();
-      log('total locked',fraktalsTotal);
 
       let tokenERC721owner = await TokenERC721.ownerOf(1);
       expect(tokenERC721owner).to.equal(factory.address);
@@ -228,11 +216,11 @@ describe("Fraktal Factory", function () {
       );
       expect(aliceImportBalance[0]).to.equal(ethers.BigNumber.from("1"));
       expect(aliceImportBalance[1]).to.equal(ethers.BigNumber.from("0"));
-      let collateralAddress = await factory.getERC721Collateral(0);
+      let collateralAddress = await factory.getERC721Collateral(TokenFromERC721.address);
       log('collateral of 0 ',collateralAddress)
-      let collateralAddress1 = await factory.getERC721Collateral(1);
+      let collateralAddress1 = await factory.getERC721Collateral(Token2FromERC721.address);
       log('collateral of 1 ',collateralAddress1)
-      let collateralAddress2 = await factory.getERC721Collateral(2);
+      let collateralAddress2 = await factory.getERC721Collateral(Token3FromERC721.address);
       log('collateral of 2 ',collateralAddress2)
       // log(`collateralAddress: ${collateralAddress}`);
       // expect(collateralAddress).to.equal(TokenERC721.address);
@@ -268,29 +256,32 @@ describe("Fraktal Factory", function () {
         true
       );
       log("Alice whitdraws its ERC721");
-      console.log('1')
       await factory.connect(alice).claimERC721(1);
-      console.log('2; Bob checks the tokenId')
       await factory.connect(bob).claimERC721(2);
-      console.log('3')
       await factory.connect(carol).claimERC721(3);
-      console.log('4')
       await factory.connect(alice).claimERC721(4);
-      console.log('5')
       await factory.connect(alice).claimERC721(5);
-      console.log('6')
       await factory.connect(bob).claimERC721(6);
+
+      let aliceBal1 = await TokenERC721.balanceOf(alice.address);
+      let aliceBal2 = await Token2ERC721.balanceOf(alice.address);
+      let bobBal1 = await TokenERC721.balanceOf(bob.address);
+      let bobBal2 = await Token2ERC721.balanceOf(bob.address);
+      let carolBal1 = await TokenERC721.balanceOf(carol.address);
+      expect(aliceBal1).to.equal(ethers.BigNumber.from("1"));
+      expect(aliceBal2).to.equal(ethers.BigNumber.from("2"));
+      expect(bobBal1).to.equal(ethers.BigNumber.from("1"));
+      expect(bobBal2).to.equal(ethers.BigNumber.from("1"));
+      expect(carolBal1).to.equal(ethers.BigNumber.from("1"));
 
       let itemAbandoned = await factory.getFraktalAddress(0);
       log(`Fraktal new address: ${itemAbandoned}`);
-      let itemAbandonedCollateral = await factory.getERC721Collateral(1);
+      let itemAbandonedCollateral = await factory.getERC721Collateral(TokenFromERC721.address);
       log(`Collateral address: ${itemAbandonedCollateral}`);
-      let aliceERC721Balance = await TokenERC721.balanceOf(alice.address);
       let aliceBalance = await TokenFromERC721.balanceOfBatch(
         [alice.address, alice.address],
         [0, 1]
       );
-      expect(aliceERC721Balance).to.equal(ethers.BigNumber.from("1"));
       expect(aliceBalance[1]).to.equal(ethers.BigNumber.from("0"));
       expect(aliceBalance[0]).to.equal(ethers.BigNumber.from("0"));
     });
@@ -316,8 +307,6 @@ describe("Fraktal Factory", function () {
       );
       expect(aliceImportBalance[0]).to.equal(ethers.BigNumber.from("1"));
       expect(aliceImportBalance[1]).to.equal(ethers.BigNumber.from("0"));
-      let collateralAddress = await factory.getERC1155Collateral(1);
-      expect(collateralAddress).to.equal(Token.address);
       let fraktalsTotal = await factory.getFraktalsLength();
       log('total locked',fraktalsTotal);
 
@@ -329,8 +318,6 @@ describe("Fraktal Factory", function () {
         true
       );
       log("Alice whitdraws its ERC1155");
-      let itemAbandonedCollateral = await factory.getERC721Collateral(1);
-      log(`Collateral address: ${itemAbandonedCollateral}`);
       await factory.connect(alice).claimERC1155(7);
       let aliceERC1155Balance = await Token.balanceOf(alice.address, 0);
       let aliceBalance = await TokenFromERC1155.balanceOfBatch(
