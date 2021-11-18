@@ -87,20 +87,24 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
     function claimERC721(uint256 _tokenId) external {
       address fraktalAddress = fraktalNFTs.get(_tokenId);
       ERC721Imported storage collateralNft = lockedERC721s[fraktalAddress];
+      address abandonedFraktal = collateralNft.tokenAddress;
+      uint256 abandonedIndex = collateralNft.tokenIndex;
       ERC721Upgradeable(collateralNft.tokenAddress).transferFrom(address(this), _msgSender(), collateralNft.tokenIndex);
       FraktalNFT(fraktalAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
       fraktalNFTs.set(_tokenId, address(0));
       lockedERC721s[fraktalAddress] = ERC721Imported(address(0),0);
-      emit ERC721UnLocked(_msgSender(), _tokenId, collateralNft.tokenAddress, collateralNft.tokenIndex);
+      emit ERC721UnLocked(_msgSender(), _tokenId, abandonedFraktal, abandonedIndex);
     }
     function claimERC1155(uint256 _tokenId) external {
       address fraktalAddress = fraktalNFTs.get(_tokenId);
       ERC1155Imported storage collateralNft = lockedERC1155s[fraktalAddress];
+      address abandonedFraktal = collateralNft.tokenAddress;
+      uint256 abandonedIndex = collateralNft.tokenIndex;
       ERC1155Upgradeable(collateralNft.tokenAddress).safeTransferFrom(address(this), _msgSender(), collateralNft.tokenIndex,1,'');
       FraktalNFT(fraktalAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
       fraktalNFTs.set(_tokenId, address(0));
       lockedERC1155s[fraktalAddress] = ERC1155Imported(address(0),0);
-      emit ERC1155UnLocked(_msgSender(), fraktalAddress, collateralNft.tokenAddress, collateralNft.tokenIndex);
+      emit ERC1155UnLocked(_msgSender(), fraktalAddress, abandonedFraktal, abandonedIndex);
     }
 
 // GETTERS
