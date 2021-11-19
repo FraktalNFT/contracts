@@ -7,14 +7,14 @@ import "@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract FraktalMarket is
-  Ownable,
+  Initializable,
+  OwnableUpgradeable,
   ReentrancyGuard,
-  ERC1155Holder,
-  Initializable
+  ERC1155Holder
 {
   uint16 public fee;
   uint256 private feesAccrued;
@@ -52,6 +52,7 @@ contract FraktalMarket is
   event OfferVoted(address voter, address offerer, address tokenAddress, bool sold);
 
   function initialize() public initializer {
+    __Ownable_init();
     fee = 100; //1%
   }
 

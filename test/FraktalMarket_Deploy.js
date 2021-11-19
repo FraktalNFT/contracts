@@ -53,7 +53,7 @@ describe('Fraktal Market - Deploy', function () {
   it('Should deploy to the correct owner', async function () {
     let defaultFee = 100;
     market = await getDeployedContract('Market Contract', await marketContract());
-    await market.connect(alice).initialize();
+    await market.connect(owner).initialize();
     log(`Market owner: ${await market.owner()}`);
     expect(await market.owner()).to.equal(owner.address);
     expect(await market.fee()).to.equal(defaultFee);
