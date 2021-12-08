@@ -27,7 +27,18 @@ contract FraktalMarket is
     uint256 price;
     uint256 numberOfShares;
   }
+  struct AuctionListing {
+    address tokenAddress;
+    uint256 reservePrice;
+    uint256 numberOfShares;
+    uint256 auctionEndTime;
+  }
   mapping(address => mapping(address => Listing)) listings;
+
+  mapping(address => mapping(address => AuctionListing)) auctionListings;
+  mapping(address => mapping(address => uint256)) auctionReserve;
+  //use below mapping as like this: participantContribution[tokenAddress][auctioneer][participant]
+  mapping(address => mapping(address => mapping(address => uint256))) participantContribution;
   mapping(address => mapping(address => Proposal)) public offers;
   mapping(address => uint256) public sellersBalance;
   mapping(address => uint256) public maxPriceRegistered;
@@ -44,6 +55,19 @@ contract FraktalMarket is
     address tokenAddress,
     uint256 price,
     uint256 amountOfShares
+  );
+  event AuctionItemListed(
+    address owner,
+    address tokenAddress,
+    uint256 reservePrice,
+    uint256 amountOfShares,
+    uint256 endTime
+  );
+  event AuctionContribute(
+    address participant,
+    address seller,
+    address tokenAddress,
+    uint256 value
   );
   event FraktalClaimed(address owner, address tokenAddress);
   event SellerPaymentPull(address seller, uint256 balance);
@@ -88,6 +112,15 @@ contract FraktalMarket is
     sellersBalance[_msgSender()] = 0;
     AddressUpgradeable.sendValue(seller, balance);
     emit SellerPaymentPull(_msgSender(), balance);
+  }
+  function redeemAuctionSeller(
+    address _tokenAddress
+    ) external nonReentrant {
+    AuctionListing memory auctionListing = auctionListings[_tokenAddress][_msgSender()];
+    //Todo logic for auction participant
+  }
+  function redeemAuctionParticipant() external nonReentrant {
+    //Todo logic for auction participant
   }
 
   function importFraktal(address tokenAddress, uint256 fraktionsIndex)
@@ -141,6 +174,21 @@ contract FraktalMarket is
     emit Bought(_msgSender(), from, tokenAddress, _numberOfShares);
   }
 
+  function participateAuction(
+    address from,
+    address tokenAddress
+  ) external payable nonReentrant {
+    require(!FraktalNFT(tokenAddress).sold(), "item sold");
+    require(msg.value>0,"Not enough Eth");
+
+    uint256 contribution = msg.value;
+
+    // of Eth contribution to auction reserve and 
+    auctionReserve[tokenAddress][from] += contribution;
+    participantContribution[tokenAddress][from][_msgSender()] += contribution;
+    emit AuctionContribute(_msgSender(), from, tokenAddress, contribution);
+  }
+
   function listItem(
     address _tokenAddress,
     uint256 _price,
@@ -166,6 +214,39 @@ contract FraktalMarket is
     });
     listings[_tokenAddress][_msgSender()] = listing;
     emit ItemListed(_msgSender(), _tokenAddress, _price, _numberOfShares);
+    return true;
+  }
+
+  function listItemAuction(
+    address _tokenAddress,
+    uint256 _reservePrice,
+    uint256 _numberOfShares
+  ) external returns (bool) {
+    uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
+    require(
+      FraktalNFT(_tokenAddress).balanceOf(address(this), 0) == 1,
+      "nft not in market"
+    );
+    require(!FraktalNFT(_tokenAddress).sold(), "item sold");
+    require(
+      FraktalNFT(_tokenAddress).balanceOf(_msgSender(), fraktionsIndex) >=
+        _numberOfShares,
+      "no valid Fraktions"
+    );
+    
+    AuctionListing memory auctionListed = auctionListings[_tokenAddress][_msgSender()];
+    require(auctionListed.numberOfShares == 0, "unlist first");
+
+    uint256 _endTime = block.timestamp + (10 days);
+
+    AuctionListing memory auctionListing = AuctionListing({
+      tokenAddress: _tokenAddress,
+      reservePrice: _reservePrice,
+      numberOfShares: _numberOfShares,
+      auctionEndTime: _endTime
+    });
+    auctionListings[_tokenAddress][_msgSender()] = auctionListing;
+    emit AuctionItemListed(_msgSender(), _tokenAddress, _reservePrice, _numberOfShares, _endTime);
     return true;
   }
 
@@ -252,6 +333,12 @@ contract FraktalMarket is
   function unlistItem(address tokenAddress) external {
     delete listings[tokenAddress][_msgSender()];
     emit ItemListed(_msgSender(), tokenAddress, 0, 0);
+  }
+
+  function unlistAuctionItem(address tokenAddress) external {
+    //Todo other additional action to unlist auction
+    delete auctionListings[tokenAddress][_msgSender()];
+    emit AuctionItemListed(_msgSender(), tokenAddress, 0, 0, 0);
   }
 
   // GETTERS
