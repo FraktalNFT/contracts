@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+
 contract FraktalMarket is
   Initializable,
   OwnableUpgradeable,
@@ -35,10 +36,13 @@ contract FraktalMarket is
   }
   mapping(address => mapping(address => Listing)) listings;
 
-  mapping(address => mapping(address => AuctionListing)) auctionListings;
-  mapping(address => mapping(address => uint256)) auctionReserve;
-  //use below mapping as like this: participantContribution[tokenAddress][auctioneer][participant]
-  mapping(address => mapping(address => mapping(address => uint256))) participantContribution;
+  mapping(address => mapping(address => mapping(uint256 => AuctionListing))) public auctionListings;
+  mapping(address => uint256) public auctionNonce;
+  mapping(address => mapping(uint256 => uint256)) public auctionReserve;
+  mapping(address => mapping(uint256 => bool)) auctionSellerRedeemed;
+  //use below mapping as like this: participantContribution[auctioneer][sellerNonce][participant]
+  mapping(address => mapping(uint256 => mapping(address => uint256))) public participantContribution;
+
   mapping(address => mapping(address => Proposal)) public offers;
   mapping(address => uint256) public sellersBalance;
   mapping(address => uint256) public maxPriceRegistered;
@@ -113,14 +117,79 @@ contract FraktalMarket is
     AddressUpgradeable.sendValue(seller, balance);
     emit SellerPaymentPull(_msgSender(), balance);
   }
+
   function redeemAuctionSeller(
-    address _tokenAddress
+    address _tokenAddress,
+    address _seller,
+    uint256 _sellerNonce
     ) external nonReentrant {
-    AuctionListing memory auctionListing = auctionListings[_tokenAddress][_msgSender()];
-    //Todo logic for auction participant
+    require(_seller == _msgSender());
+    require(!auctionSellerRedeemed[_seller][_sellerNonce]);//is seller already claim?
+    AuctionListing storage auctionListed = auctionListings[_tokenAddress][_msgSender()][_sellerNonce];
+    require(block.timestamp >= auctionListed.auctionEndTime);//is auction ended?
+    uint256 _auctionReserve = auctionReserve[_seller][_sellerNonce];
+    //auction successful
+    //give eth minus fee to seller
+    if(_auctionReserve>=auctionListed.reservePrice){
+      uint256 totalForSeller = _auctionReserve - ((_auctionReserve * fee) / 10000);
+
+      (bool sent,) = _msgSender().call{value: totalForSeller}("");
+      auctionSellerRedeemed[_seller][_sellerNonce] = true;
+      require(sent);//check if ether failed to send
+    }
+
+    //auction failed
+    else{
+      auctionSellerRedeemed[_seller][_sellerNonce] = true;
+      
+      FraktalNFT(_tokenAddress).safeTransferFrom(
+      address(this),
+      _msgSender(),
+      FraktalNFT(_tokenAddress).fraktionsIndex(),
+      auctionListed.numberOfShares,
+      ""
+      );
+    }
+
   }
-  function redeemAuctionParticipant() external nonReentrant {
-    //Todo logic for auction participant
+
+  function redeemAuctionParticipant(
+    address _tokenAddress,
+    address _seller,
+    uint256 _sellerNonce
+  ) external nonReentrant {
+    AuctionListing storage auctionListing = auctionListings[_tokenAddress][_seller][_sellerNonce];
+    require(block.timestamp >= auctionListing.auctionEndTime);//is auction ended?
+    require(auctionListing.auctionEndTime>0);//is auction exist?
+    uint256 _auctionReserve = auctionReserve[_seller][_sellerNonce];
+    uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
+    //auction successful
+    //give participant fraktions according to their contribution
+    if(_auctionReserve>=auctionListing.reservePrice){
+      uint256 auctionFraks = auctionListing.numberOfShares;
+      uint256 _participantContribution = participantContribution[_seller][_sellerNonce][_msgSender()];
+      uint256 eligibleFrak = (_participantContribution * auctionFraks) / _auctionReserve;
+      participantContribution[_seller][_sellerNonce][_msgSender()] = 0;
+
+      FraktalNFT(_tokenAddress).safeTransferFrom(
+      address(this),
+      _msgSender(),
+      fraktionsIndex,
+      eligibleFrak,
+      ""
+      );
+    }
+
+    //auction failed
+    //give back contributed eth to participant
+    else{
+      uint256 _contributed = participantContribution[_seller][_sellerNonce][_msgSender()];
+      participantContribution[_seller][_sellerNonce][_msgSender()] = 0;
+
+      (bool sent,) = _msgSender().call{value: _contributed}("");
+      require(sent);//check if ether failed to send
+    }
+
   }
 
   function importFraktal(address tokenAddress, uint256 fraktionsIndex)
@@ -175,17 +244,20 @@ contract FraktalMarket is
   }
 
   function participateAuction(
+    address tokenAddress,
     address from,
-    address tokenAddress
+    uint256 sellerNonce
   ) external payable nonReentrant {
-    require(!FraktalNFT(tokenAddress).sold(), "item sold");
-    require(msg.value>0,"Not enough Eth");
-
+    AuctionListing storage auctionListing = auctionListings[tokenAddress][from][sellerNonce];
+    require(block.timestamp < auctionListing.auctionEndTime);//is auction still ongoing?
+    require(auctionListing.auctionEndTime>0);//is auction exist?
     uint256 contribution = msg.value;
+    require(contribution>0);//need eth to participate
 
-    // of Eth contribution to auction reserve and 
-    auctionReserve[tokenAddress][from] += contribution;
-    participantContribution[tokenAddress][from][_msgSender()] += contribution;
+
+    //note of Eth contribution to auction reserve and participant
+    auctionReserve[from][sellerNonce] += msg.value;
+    participantContribution[from][sellerNonce][_msgSender()] += contribution;
     emit AuctionContribute(_msgSender(), from, tokenAddress, contribution);
   }
 
@@ -221,7 +293,7 @@ contract FraktalMarket is
     address _tokenAddress,
     uint256 _reservePrice,
     uint256 _numberOfShares
-  ) external returns (bool) {
+  ) external returns (uint256) {
     uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
     require(
       FraktalNFT(_tokenAddress).balanceOf(address(this), 0) == 1,
@@ -233,21 +305,27 @@ contract FraktalMarket is
         _numberOfShares,
       "no valid Fraktions"
     );
-    
-    AuctionListing memory auctionListed = auctionListings[_tokenAddress][_msgSender()];
-    require(auctionListed.numberOfShares == 0, "unlist first");
+    require(_reservePrice>0);
+    uint256 sellerNonce = auctionNonce[_msgSender()]++;
 
     uint256 _endTime = block.timestamp + (10 days);
 
-    AuctionListing memory auctionListing = AuctionListing({
+    auctionListings[_tokenAddress][_msgSender()][sellerNonce] = AuctionListing({
       tokenAddress: _tokenAddress,
       reservePrice: _reservePrice,
       numberOfShares: _numberOfShares,
       auctionEndTime: _endTime
     });
-    auctionListings[_tokenAddress][_msgSender()] = auctionListing;
+
+    FraktalNFT(_tokenAddress).safeTransferFrom(
+      _msgSender(),
+      address(this),
+      fraktionsIndex,
+      _numberOfShares,
+      ""
+    );
     emit AuctionItemListed(_msgSender(), _tokenAddress, _reservePrice, _numberOfShares, _endTime);
-    return true;
+    return auctionNonce[_msgSender()];
   }
 
   function exportFraktal(address tokenAddress) public {
@@ -335,10 +413,13 @@ contract FraktalMarket is
     emit ItemListed(_msgSender(), tokenAddress, 0, 0);
   }
 
-  function unlistAuctionItem(address tokenAddress) external {
-    //Todo other additional action to unlist auction
-    delete auctionListings[tokenAddress][_msgSender()];
-    emit AuctionItemListed(_msgSender(), tokenAddress, 0, 0, 0);
+  function unlistAuctionItem(address tokenAddress,uint256 sellerNonce) external {
+    AuctionListing storage auctionListed = auctionListings[tokenAddress][_msgSender()][sellerNonce];
+    require(auctionListed.auctionEndTime>0);
+
+    auctionListed.auctionEndTime = block.timestamp;
+
+    emit AuctionItemListed(_msgSender(), tokenAddress, 0, 0, auctionListed.auctionEndTime);
   }
 
   // GETTERS
