@@ -87,8 +87,8 @@ contract FraktalMarket is
   // Admin Functions
   //////////////////////////////////
   function setFee(uint16 _newFee) external onlyOwner {
-    require(_newFee >= 0, "FraktalMarket: negative fee not acceptable");
-    require(_newFee < 10000, "FraktalMarket: fee out of bounds");
+    require(_newFee >= 0);
+    require(_newFee < 10000);
     fee = _newFee;
     emit FeeUpdated(_newFee);
   }
@@ -110,7 +110,7 @@ contract FraktalMarket is
   // Users Functions
   //////////////////////////////////
   function rescueEth() external nonReentrant {
-    require(sellersBalance[_msgSender()] > 0, "You dont have any to claim");
+    require(sellersBalance[_msgSender()] > 0, "No claimed ETH");
     address payable seller = payable(_msgSender());
     uint256 balance = sellersBalance[_msgSender()];
     sellersBalance[_msgSender()] = 0;
@@ -219,14 +219,13 @@ contract FraktalMarket is
     Listing storage listing = listings[tokenAddress][from];
     require(!FraktalNFT(tokenAddress).sold(), "item sold");
     require(
-      listing.numberOfShares >= _numberOfShares,
-      "Not enough Fraktions on sale"
-    );
+      listing.numberOfShares >= _numberOfShares
+    );//"Not enough Fraktions on sale"
     uint256 buyPrice = (listing.price * _numberOfShares);
     uint256 totalFees = (buyPrice * fee) / 10000;
     uint256 totalForSeller = buyPrice - totalFees;
     uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
-    require(msg.value >= buyPrice, "FraktalMarket: insufficient funds");
+    require(msg.value >= buyPrice);//"FraktalMarket: insufficient funds"
     listing.numberOfShares = listing.numberOfShares - _numberOfShares;
     if (listing.price * 10000 > maxPriceRegistered[tokenAddress]) {
       maxPriceRegistered[tokenAddress] = listing.price * 10000;
@@ -268,17 +267,15 @@ contract FraktalMarket is
   ) external returns (bool) {
     uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
     require(
-      FraktalNFT(_tokenAddress).balanceOf(address(this), 0) == 1,
-      "nft not in market"
-    );
-    require(!FraktalNFT(_tokenAddress).sold(), "item sold");
+      FraktalNFT(_tokenAddress).balanceOf(address(this), 0) == 1
+    );// "nft not in market"
+    require(!FraktalNFT(_tokenAddress).sold());//"item sold"
     require(
       FraktalNFT(_tokenAddress).balanceOf(_msgSender(), fraktionsIndex) >=
-        _numberOfShares,
-      "no valid Fraktions"
-    );
+        _numberOfShares
+    );//"no valid Fraktions"
     Listing memory listed = listings[_tokenAddress][_msgSender()];
-    require(listed.numberOfShares == 0, "unlist first");
+    require(listed.numberOfShares == 0);//"unlist first"
     Listing memory listing = Listing({
       tokenAddress: _tokenAddress,
       price: _price,
@@ -296,15 +293,13 @@ contract FraktalMarket is
   ) external returns (uint256) {
     uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
     require(
-      FraktalNFT(_tokenAddress).balanceOf(address(this), 0) == 1,
-      "nft not in market"
-    );
-    require(!FraktalNFT(_tokenAddress).sold(), "item sold");
+      FraktalNFT(_tokenAddress).balanceOf(address(this), 0) == 1
+    );//"nft not in market"
+    require(!FraktalNFT(_tokenAddress).sold());// "item sold"
     require(
       FraktalNFT(_tokenAddress).balanceOf(_msgSender(), fraktionsIndex) >=
-        _numberOfShares,
-      "no valid Fraktions"
-    );
+        _numberOfShares
+    );//"no valid Fraktions"
     require(_reservePrice>0);
     uint256 sellerNonce = auctionNonce[_msgSender()]++;
 
@@ -336,10 +331,10 @@ contract FraktalMarket is
   }
 
   function makeOffer(address tokenAddress, uint256 _value) public payable {
-    require(msg.value >= _value, "No pay");
+    require(msg.value >= _value);//"No pay"
     Proposal storage prop = offers[_msgSender()][tokenAddress];
     address payable offerer = payable(_msgSender());
-    require(!prop.winner, "offer accepted");
+    require(!prop.winner);// "offer accepted"
     if (_value >= prop.value) {
       require(_value >= maxPriceRegistered[tokenAddress], "Min offer");
       require(msg.value >= _value - prop.value);
