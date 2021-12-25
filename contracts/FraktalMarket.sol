@@ -12,10 +12,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 
 contract FraktalMarket is
-  Initializable,
-  OwnableUpgradeable,
-  ReentrancyGuard,
-  ERC1155Holder
+Initializable,
+OwnableUpgradeable,
+ReentrancyGuard,
+ERC1155Holder
 {
   uint16 public fee;
   uint256 private feesAccrued;
@@ -205,7 +205,7 @@ contract FraktalMarket is
     FraktalNFT(tokenAddress).fraktionalize(_msgSender(), fraktionsIndex);
     FraktalNFT(tokenAddress).lockSharesTransfer(
       _msgSender(),
-      10000,
+      10000*10**18,
       address(this)
     );
     FraktalNFT(tokenAddress).unlockSharesTransfer(_msgSender(), address(this));
@@ -227,8 +227,8 @@ contract FraktalMarket is
     uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
     require(msg.value >= buyPrice);//"FraktalMarket: insufficient funds"
     listing.numberOfShares = listing.numberOfShares - _numberOfShares;
-    if (listing.price * 10000 > maxPriceRegistered[tokenAddress]) {
-      maxPriceRegistered[tokenAddress] = listing.price * 10000;
+    if (listing.price * 10000*10**18 > maxPriceRegistered[tokenAddress]) {
+      maxPriceRegistered[tokenAddress] = listing.price * 10000*10**18;
     }
     feesAccrued += msg.value - totalForSeller;
     sellersBalance[from] += totalForSeller;
@@ -325,7 +325,7 @@ contract FraktalMarket is
 
   function exportFraktal(address tokenAddress) public {
     uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
-    FraktalNFT(tokenAddress).safeTransferFrom(_msgSender(), address(this), fraktionsIndex, 10000, '');
+    FraktalNFT(tokenAddress).safeTransferFrom(_msgSender(), address(this), fraktionsIndex, 10000*10**18, '');
     FraktalNFT(tokenAddress).defraktionalize();
     FraktalNFT(tokenAddress).safeTransferFrom(address(this), _msgSender(), 0, 1, '');
   }

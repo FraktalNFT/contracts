@@ -70,19 +70,19 @@ contract FraktalNFT is ERC1155Upgradeable {
     fraktionalized = true;
     sold = false;
     fraktionsIndex = _tokenId;
-    _mint(_to, _tokenId, 10000, "");
+    _mint(_to, _tokenId, 10000*10**18, "");
     emit Fraktionalized(_msgSender(), _to, _tokenId);
   }
 
   function defraktionalize() external {
     fraktionalized = false;
-    _burn(_msgSender(), fraktionsIndex, 10000);
+    _burn(_msgSender(), fraktionsIndex, 10000*10**18);
     emit Defraktionalized(_msgSender(), fraktionsIndex);
   }
 
   function setMajority(uint16 newValue) external {
     require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
-    require(newValue <= 10000, "Incorrect value");
+    require(newValue <= 10000*10**18, "Incorrect value");
     majority = newValue;
     emit MajorityValueChanged(newValue);
   }
