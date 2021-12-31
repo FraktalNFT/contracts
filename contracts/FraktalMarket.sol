@@ -39,7 +39,7 @@ ERC1155Holder
   mapping(address => mapping(address => mapping(uint256 => AuctionListing))) public auctionListings;
   mapping(address => uint256) public auctionNonce;
   mapping(address => mapping(uint256 => uint256)) public auctionReserve;
-  mapping(address => mapping(uint256 => bool)) auctionSellerRedeemed;
+  mapping(address => mapping(uint256 => bool)) public auctionSellerRedeemed;
   //use below mapping as like this: participantContribution[auctioneer][sellerNonce][participant]
   mapping(address => mapping(uint256 => mapping(address => uint256))) public participantContribution;
 
@@ -65,19 +65,26 @@ ERC1155Holder
     address tokenAddress,
     uint256 reservePrice,
     uint256 amountOfShares,
-    uint256 endTime
+    uint256 endTime,
+    uint256 nonce
   );
   event AuctionContribute(
     address participant,
-    address seller,
     address tokenAddress,
+    address seller,
+    uint256 sellerNonce,
     uint256 value
   );
+  event Deployed();
   event FraktalClaimed(address owner, address tokenAddress);
   event SellerPaymentPull(address seller, uint256 balance);
   event AdminWithdrawFees(uint256 feesAccrued);
   event OfferMade(address offerer, address tokenAddress, uint256 value);
   event OfferVoted(address voter, address offerer, address tokenAddress, bool sold);
+
+  constructor(){
+    emit Deployed();
+  }
 
   function initialize() public initializer {
     __Ownable_init();
@@ -244,10 +251,10 @@ ERC1155Holder
 
   function participateAuction(
     address tokenAddress,
-    address from,
+    address seller,
     uint256 sellerNonce
   ) external payable nonReentrant {
-    AuctionListing storage auctionListing = auctionListings[tokenAddress][from][sellerNonce];
+    AuctionListing storage auctionListing = auctionListings[tokenAddress][seller][sellerNonce];
     require(block.timestamp < auctionListing.auctionEndTime);//is auction still ongoing?
     require(auctionListing.auctionEndTime>0);//is auction exist?
     uint256 contribution = msg.value;
@@ -255,9 +262,9 @@ ERC1155Holder
 
 
     //note of Eth contribution to auction reserve and participant
-    auctionReserve[from][sellerNonce] += msg.value;
-    participantContribution[from][sellerNonce][_msgSender()] += contribution;
-    emit AuctionContribute(_msgSender(), from, tokenAddress, contribution);
+    auctionReserve[seller][sellerNonce] += msg.value;
+    participantContribution[seller][sellerNonce][_msgSender()] += contribution;
+    emit AuctionContribute(_msgSender(), tokenAddress, seller, sellerNonce, contribution);
   }
 
   function listItem(
@@ -319,7 +326,7 @@ ERC1155Holder
       _numberOfShares,
       ""
     );
-    emit AuctionItemListed(_msgSender(), _tokenAddress, _reservePrice, _numberOfShares, _endTime);
+    emit AuctionItemListed(_msgSender(), _tokenAddress, _reservePrice, _numberOfShares, _endTime, sellerNonce);
     return auctionNonce[_msgSender()];
   }
 
@@ -414,7 +421,7 @@ ERC1155Holder
 
     auctionListed.auctionEndTime = block.timestamp;
 
-    emit AuctionItemListed(_msgSender(), tokenAddress, 0, 0, auctionListed.auctionEndTime);
+    emit AuctionItemListed(_msgSender(), tokenAddress, 0, 0, auctionListed.auctionEndTime,sellerNonce);
   }
 
   // GETTERS
