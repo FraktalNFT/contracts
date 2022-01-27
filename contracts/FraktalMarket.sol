@@ -18,6 +18,7 @@ ReentrancyGuard,
 ERC1155Holder
 {
   uint16 public fee;
+  uint256 public listingFee;
   uint256 private feesAccrued;
   struct Proposal {
     uint256 value;
@@ -54,6 +55,7 @@ ERC1155Holder
     uint256 numberOfShares
   );
   event FeeUpdated(uint16 newFee);
+  event ListingFeeUpdated(uint256 newFee);
   event ItemListed(
     address owner,
     address tokenAddress,
@@ -75,16 +77,12 @@ ERC1155Holder
     uint256 sellerNonce,
     uint256 value
   );
-  event Deployed();
   event FraktalClaimed(address owner, address tokenAddress);
   event SellerPaymentPull(address seller, uint256 balance);
   event AdminWithdrawFees(uint256 feesAccrued);
   event OfferMade(address offerer, address tokenAddress, uint256 value);
   event OfferVoted(address voter, address offerer, address tokenAddress, bool sold);
 
-  constructor(){
-    emit Deployed();
-  }
 
   function initialize() public initializer {
     __Ownable_init();
@@ -98,6 +96,13 @@ ERC1155Holder
     require(_newFee < 10000);
     fee = _newFee;
     emit FeeUpdated(_newFee);
+  }
+
+  function setListingFee(uint256 _newListingFee) external onlyOwner {
+    require(_newListingFee >= 0);
+    require(_newListingFee < 10000);
+    listingFee = _newListingFee;
+    emit ListingFeeUpdated(_newListingFee);
   }
 
   function withdrawAccruedFees()
@@ -228,7 +233,8 @@ ERC1155Holder
     require(
       listing.numberOfShares >= _numberOfShares
     );//"Not enough Fraktions on sale"
-    uint256 buyPrice = (listing.price * _numberOfShares);
+    uint256 buyPrice = (listing.price * _numberOfShares)/(10**18);
+    require(buyPrice!=0);
     uint256 totalFees = (buyPrice * fee) / 10000;
     uint256 totalForSeller = buyPrice - totalFees;
     uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
@@ -269,9 +275,11 @@ ERC1155Holder
 
   function listItem(
     address _tokenAddress,
-    uint256 _price,
+    uint256 _price,//wei per frak
     uint256 _numberOfShares
-  ) external returns (bool) {
+  ) payable external returns (bool) {
+    require(msg.value >= listingFee);
+    require(_price>0);
     uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
     require(
       FraktalNFT(_tokenAddress).balanceOf(address(this), 0) == 1
@@ -297,7 +305,8 @@ ERC1155Holder
     address _tokenAddress,
     uint256 _reservePrice,
     uint256 _numberOfShares
-  ) external returns (uint256) {
+  ) payable external returns (uint256) {
+    require(msg.value >= listingFee);
     uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
     require(
       FraktalNFT(_tokenAddress).balanceOf(address(this), 0) == 1

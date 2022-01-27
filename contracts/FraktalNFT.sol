@@ -83,6 +83,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   function setMajority(uint16 newValue) external {
     require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
     require(newValue <= 10000*10**18, "Incorrect value");
+    require(newValue > 0);
     majority = newValue;
     emit MajorityValueChanged(newValue);
   }
