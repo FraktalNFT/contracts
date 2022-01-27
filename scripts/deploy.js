@@ -1,4 +1,4 @@
-const { ethers } = require('hardhat')
+const { ethers, upgrades } = require('hardhat')
 const hre = require("hardhat");
 
 require('dotenv').config()
@@ -24,7 +24,8 @@ async function main(){
     const fraktalFactory = await FraktalFactory.deploy(fraktalNFT.address, paymentSpliter.address);
     console.log(`FraktalFactory deployed to: ${fraktalFactory.address}`);
 
-    const fraktalMarket = await FraktalMarket.deploy();
+    // const fraktalMarket = await FraktalMarket.deploy();
+    const fraktalMarket = await upgrades.deployProxy(FraktalMarket,[]);//deploy by proxy(upgradable)
     console.log(`FraktalMarket deployed to: ${fraktalMarket.address}`);
 
     // await hre.run("verify:verify", {
