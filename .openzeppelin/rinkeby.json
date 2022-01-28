@@ -47,12 +47,257 @@
       "address": "0x47b724E8F39d41b9c79ee3632b2eCABB4C6DcFA8",
       "txHash": "0xedb0b0794dec3ddde955f3f751a302aefc8eb4026fc9a59c7cdbd1632272054d",
       "kind": "transparent"
+    },
+    {
+      "address": "0xAC5bb139822DF52238c51aaB6932df478e177Ee3",
+      "txHash": "0x6956747d3bb1ad8fd5b38203a34d9439ed3d0cc7b323b13009a5d4b5c310a229",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xD8c8AF0eE499D4AaE83f37B74D521701062c6b05",
+      "txHash": "0x02f59c9a48173b2c0b6464488c94c0d27819517641c65a97cb9401f71f6e10d0",
+      "kind": "transparent"
     }
   ],
   "impls": {
     "c9160db6b1333f251a333abb1db9615f639553979b6b168f0629710ee10083ae": {
       "address": "0xB66957F7e84388737682dDfDF55219884B945979",
       "txHash": "0xc75fe5b4dc0057601077a329ebeb5f5c6fa5e2d1a8f1f762aee6fbd2fb0391b2",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "_status",
+            "type": "t_uint256",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "fee",
+            "type": "t_uint16",
+            "src": "contracts/FraktalMarket.sol:21"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "listingFee",
+            "type": "t_uint256",
+            "src": "contracts/FraktalMarket.sol:22"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "feesAccrued",
+            "type": "t_uint256",
+            "src": "contracts/FraktalMarket.sol:23"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "listings",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(Listing)5258_storage))",
+            "src": "contracts/FraktalMarket.sol:39"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "auctionListings",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)5267_storage)))",
+            "src": "contracts/FraktalMarket.sol:41"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "auctionNonce",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/FraktalMarket.sol:42"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "auctionReserve",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/FraktalMarket.sol:43"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "auctionSellerRedeemed",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))",
+            "src": "contracts/FraktalMarket.sol:44"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "participantContribution",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_uint256)))",
+            "src": "contracts/FraktalMarket.sol:46"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "offers",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(Proposal)5251_storage))",
+            "src": "contracts/FraktalMarket.sol:48"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "sellersBalance",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/FraktalMarket.sol:49"
+          },
+          {
+            "contract": "FraktalMarket",
+            "label": "maxPriceRegistered",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/FraktalMarket.sol:50"
+          }
+        ],
+        "types": {
+          "t_uint16": {
+            "label": "uint16"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_struct(Listing)5258_storage))": {
+            "label": "mapping(address => mapping(address => struct FraktalMarket.Listing))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_struct(Listing)5258_storage)": {
+            "label": "mapping(address => struct FraktalMarket.Listing)"
+          },
+          "t_struct(Listing)5258_storage": {
+            "label": "struct FraktalMarket.Listing",
+            "members": [
+              {
+                "label": "tokenAddress",
+                "type": "t_address"
+              },
+              {
+                "label": "price",
+                "type": "t_uint256"
+              },
+              {
+                "label": "numberOfShares",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)5267_storage)))": {
+            "label": "mapping(address => mapping(address => mapping(uint256 => struct FraktalMarket.AuctionListing)))"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)5267_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct FraktalMarket.AuctionListing))"
+          },
+          "t_mapping(t_uint256,t_struct(AuctionListing)5267_storage)": {
+            "label": "mapping(uint256 => struct FraktalMarket.AuctionListing)"
+          },
+          "t_struct(AuctionListing)5267_storage": {
+            "label": "struct FraktalMarket.AuctionListing",
+            "members": [
+              {
+                "label": "tokenAddress",
+                "type": "t_address"
+              },
+              {
+                "label": "reservePrice",
+                "type": "t_uint256"
+              },
+              {
+                "label": "numberOfShares",
+                "type": "t_uint256"
+              },
+              {
+                "label": "auctionEndTime",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(address => mapping(uint256 => bool))"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_uint256)))": {
+            "label": "mapping(address => mapping(uint256 => mapping(address => uint256)))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_struct(Proposal)5251_storage))": {
+            "label": "mapping(address => mapping(address => struct FraktalMarket.Proposal))"
+          },
+          "t_mapping(t_address,t_struct(Proposal)5251_storage)": {
+            "label": "mapping(address => struct FraktalMarket.Proposal)"
+          },
+          "t_struct(Proposal)5251_storage": {
+            "label": "struct FraktalMarket.Proposal",
+            "members": [
+              {
+                "label": "value",
+                "type": "t_uint256"
+              },
+              {
+                "label": "winner",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "c2572e434c3114a42521bfeb77d1d29a33c9bc0cf77f64acac08df5386aaaadf": {
+      "address": "0x5326CDC8Fa466376271211ACC774400F15De2334",
+      "txHash": "0xf7884ffa32f34f9d7833703b72f89e7bf12dc2d506a9e7155cdf5bdd4ea646a5",
       "layout": {
         "storage": [
           {

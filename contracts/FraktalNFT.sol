@@ -128,7 +128,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     emit unLockedSharesForTransfer(from, _to, 0);
   }
 
-  function createRevenuePayment() external payable returns (address _clone) {
+  function createRevenuePayment(address _marketAddress) external payable returns (address _clone) {
     cleanUpHolders();
     address[] memory owners = holders.values();
     uint256 listLength = holders.length();
@@ -138,7 +138,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
     _clone = ClonesUpgradeable.clone(revenueChannelImplementation);
     address payable revenueContract = payable(_clone);
-    PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions);
+    PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions, _marketAddress);
     uint256 bufferedValue = msg.value;
     AddressUpgradeable.sendValue(revenueContract, bufferedValue);
     uint256 index = revenues.length();

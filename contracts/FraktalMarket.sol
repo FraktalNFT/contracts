@@ -407,7 +407,7 @@ ERC1155Holder
         ) > FraktalNFT(tokenAddress).majority(),
         "not buyer"
       );
-      FraktalNFT(tokenAddress).createRevenuePayment{ value: offer.value }();
+      FraktalNFT(tokenAddress).createRevenuePayment{ value: offer.value }(address(this));
       maxPriceRegistered[tokenAddress] = 0;
     }
     FraktalNFT(tokenAddress).safeTransferFrom(
@@ -467,4 +467,9 @@ ERC1155Holder
   {
     return (offers[offerer][tokenAddress].value);
   }
+  fallback() external payable {
+    }
+
+    receive() external payable {
+    }
 }

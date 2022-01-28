@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./IFraktalNFT.sol";
+import "./FraktalMarket.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -34,6 +35,7 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
   address tokenParent;
   uint256 fraktionsIndex;
   bool public buyout;
+  address marketContract;
 
   /**
    * @dev Creates an instance of `PaymentSplitter` where each account in `payees` is assigned the number of shares at
@@ -42,7 +44,7 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
    * All addresses in `payees` must be non-zero. Both arrays must have the same non-zero length, and there must be no
    * duplicates in `payees`.
    */
-  function init(address[] memory payees, uint256[] memory shares_)
+  function init(address[] memory payees, uint256[] memory shares_, address _marketContract)
     external
     initializer
   {
@@ -50,12 +52,13 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     tokenParent = _msgSender();
     fraktionsIndex = IFraktalNFT(_msgSender()).getFraktionsIndex();
     buyout = IFraktalNFT(_msgSender()).getStatus();
+    marketContract = _marketContract;
   }
 
   function __PaymentSplitter_init(
     address[] memory payees,
     uint256[] memory shares_
-  ) internal initializer {
+  ) internal {
     __Context_init_unchained();
     __PaymentSplitter_init_unchained(payees, shares_);
   }
@@ -63,7 +66,7 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
   function __PaymentSplitter_init_unchained(
     address[] memory payees,
     uint256[] memory shares_
-  ) internal initializer {
+  ) internal {
     require(
       payees.length == shares_.length,
       "PaymentSplitter: payees and shares length mismatch"
@@ -145,7 +148,14 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     _released[operator] = _released[operator] + payment;
     _totalReleased = _totalReleased + payment;
 
-    AddressUpgradeable.sendValue(operator, payment);
+    address payable marketPayable = payable(marketContract);
+    uint16 marketFee = FraktalMarket(marketPayable).fee();
+
+    uint256 forMarket = (payment * marketFee )/ 10000;
+    uint256 forOperator = payment - forMarket;
+
+    AddressUpgradeable.sendValue(operator, forOperator);
+    AddressUpgradeable.sendValue(marketPayable, forMarket);
     emit PaymentReleased(operator, payment);
   }
 
