@@ -241,8 +241,8 @@ ERC1155Holder
     uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
     require(msg.value >= buyPrice);//"FraktalMarket: insufficient funds"
     listing.numberOfShares = listing.numberOfShares - _numberOfShares;
-    if (listing.price * 10000*10**18 > maxPriceRegistered[tokenAddress]) {
-      maxPriceRegistered[tokenAddress] = listing.price * 10000*10**18;
+    if (listing.price * 10000 > maxPriceRegistered[tokenAddress]) {
+      maxPriceRegistered[tokenAddress] = listing.price * 10000;
     }
     feesAccrued += msg.value - totalForSeller;
     sellersBalance[from] += totalForSeller;
