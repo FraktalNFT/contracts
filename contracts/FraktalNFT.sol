@@ -70,19 +70,20 @@ contract FraktalNFT is ERC1155Upgradeable {
     fraktionalized = true;
     sold = false;
     fraktionsIndex = _tokenId;
-    _mint(_to, _tokenId, 10000, "");
+    _mint(_to, _tokenId, 10000*10**18, "");
     emit Fraktionalized(_msgSender(), _to, _tokenId);
   }
 
   function defraktionalize() external {
     fraktionalized = false;
-    _burn(_msgSender(), fraktionsIndex, 10000);
+    _burn(_msgSender(), fraktionsIndex, 10000*10**18);
     emit Defraktionalized(_msgSender(), fraktionsIndex);
   }
 
   function setMajority(uint16 newValue) external {
     require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
-    require(newValue <= 10000, "Incorrect value");
+    require(newValue <= 10000*10**18, "Incorrect value");
+    require(newValue > 0);
     majority = newValue;
     emit MajorityValueChanged(newValue);
   }
@@ -127,7 +128,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     emit unLockedSharesForTransfer(from, _to, 0);
   }
 
-  function createRevenuePayment() external payable returns (address _clone) {
+  function createRevenuePayment(address _marketAddress) external payable returns (address _clone) {
     cleanUpHolders();
     address[] memory owners = holders.values();
     uint256 listLength = holders.length();
@@ -137,7 +138,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     }
     _clone = ClonesUpgradeable.clone(revenueChannelImplementation);
     address payable revenueContract = payable(_clone);
-    PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions);
+    PaymentSplitterUpgradeable(revenueContract).init(owners, fraktions, _marketAddress);
     uint256 bufferedValue = msg.value;
     AddressUpgradeable.sendValue(revenueContract, bufferedValue);
     uint256 index = revenues.length();
