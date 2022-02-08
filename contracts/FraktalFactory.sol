@@ -52,9 +52,9 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
 
 // Users Functions
 //////////////////////////////////
-    function mint(string memory urlIpfs, uint16 majority) public returns (address _clone) {
+    function mint(string memory urlIpfs, uint16 majority, string memory _name, string memory _symbol) public returns (address _clone) {
       _clone = ClonesUpgradeable.clone(Fraktalimplementation);
-      FraktalNFT(_clone).init(_msgSender(), revenueChannelImplementation, urlIpfs, majority);
+      FraktalNFT(_clone).init(_msgSender(), revenueChannelImplementation, urlIpfs, majority,_name,_symbol);
       uint256 index = fraktalNFTs.length();
       fraktalNFTs.set(index, _clone);
       emit Minted(_msgSender(), urlIpfs, _clone,index);
@@ -62,8 +62,12 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
 
     function importERC721(address _tokenAddress, uint256 _tokenId, uint16 majority) external returns (address _clone) {
       string memory uri = ERC721Upgradeable(_tokenAddress).tokenURI(_tokenId);
+      string memory name = ERC721Upgradeable(_tokenAddress).name();
+      string memory symbol = ERC721Upgradeable(_tokenAddress).symbol();
+      name = string(abi.encodePacked("FraktalNFT(",name,")"));
+      symbol = string(abi.encodePacked("F",symbol,"#",uint2str(_tokenId)));
       ERC721Upgradeable(_tokenAddress).transferFrom(_msgSender(), address(this), _tokenId);
-      _clone = this.mint(uri, majority);
+      _clone = this.mint(uri, majority, name, symbol);
       ERC721Imported memory nft = ERC721Imported({
         tokenAddress: _tokenAddress,
         tokenIndex: _tokenId
@@ -75,7 +79,7 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
     function importERC1155(address _tokenAddress, uint256 _tokenId, uint16 majority) external returns (address _clone) {
       string memory uri = ERC1155Upgradeable(_tokenAddress).uri(_tokenId);
       ERC1155Upgradeable(_tokenAddress).safeTransferFrom(_msgSender(), address(this), _tokenId, 1, '');
-      _clone = this.mint(uri, majority);
+      _clone = this.mint(uri, majority,"","");
       ERC1155Imported memory nft = ERC1155Imported({
         tokenAddress: _tokenAddress,
         tokenIndex: _tokenId
@@ -120,6 +124,29 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
     }
     function getFraktalsLength() public view returns(uint256){
       return(fraktalNFTs.length());
+    }
+
+
+    function uint2str(uint256 _i) internal pure returns (string memory _uintAsString) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint j = _i;
+        uint len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint k = len;
+        while (_i != 0) {
+            k = k-1;
+            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
+            _i /= 10;
+        }
+        return string(bstr);
     }
 }
 
