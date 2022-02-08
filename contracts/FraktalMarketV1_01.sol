@@ -145,6 +145,7 @@ ERC1155Holder
     //give eth minus fee to seller
     if(_auctionReserve>=auctionListed.reservePrice){
       uint256 totalForSeller = _auctionReserve - ((_auctionReserve * fee) / 10000);
+      feesAccrued += _auctionReserve - totalForSeller;
 
       (bool sent,) = _msgSender().call{value: totalForSeller}("");
       auctionSellerRedeemed[_seller][_sellerNonce] = true;
@@ -475,8 +476,10 @@ ERC1155Holder
     return (offers[offerer][tokenAddress].value);
   }
   fallback() external payable {
-    }
-
-    receive() external payable {
-    }
+      feesAccrued += msg.value;
+  }
+  
+  receive() external payable {
+      feesAccrued += msg.value;
+  }
 }

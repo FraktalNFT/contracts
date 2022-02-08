@@ -1004,6 +1004,241 @@
           }
         }
       }
+    },
+    "8ae3469726975c962614e81f954b7955b804d3947b272eb759e6a60619c5c1bd": {
+      "address": "0x552B92A5647B761F60c933978ab0309ca47a9f87",
+      "txHash": "0xe0cc14c3807015362d84b9b15310995cbe2f98b94b1806272a9bc515a4620236",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "_status",
+            "type": "t_uint256",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "fee",
+            "type": "t_uint16",
+            "src": "contracts/FraktalMarketV1_01.sol:21"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "listingFee",
+            "type": "t_uint256",
+            "src": "contracts/FraktalMarketV1_01.sol:22"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "feesAccrued",
+            "type": "t_uint256",
+            "src": "contracts/FraktalMarketV1_01.sol:23"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "listings",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(Listing)4917_storage))",
+            "src": "contracts/FraktalMarketV1_01.sol:39"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "auctionListings",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)4926_storage)))",
+            "src": "contracts/FraktalMarketV1_01.sol:41"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "auctionNonce",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/FraktalMarketV1_01.sol:42"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "auctionReserve",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/FraktalMarketV1_01.sol:43"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "auctionSellerRedeemed",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))",
+            "src": "contracts/FraktalMarketV1_01.sol:44"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "participantContribution",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_uint256)))",
+            "src": "contracts/FraktalMarketV1_01.sol:46"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "offers",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(Proposal)4910_storage))",
+            "src": "contracts/FraktalMarketV1_01.sol:48"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "sellersBalance",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/FraktalMarketV1_01.sol:49"
+          },
+          {
+            "contract": "FraktalMarketV1_1",
+            "label": "maxPriceRegistered",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/FraktalMarketV1_01.sol:50"
+          }
+        ],
+        "types": {
+          "t_uint16": {
+            "label": "uint16"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_struct(Listing)4917_storage))": {
+            "label": "mapping(address => mapping(address => struct FraktalMarketV1_1.Listing))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_struct(Listing)4917_storage)": {
+            "label": "mapping(address => struct FraktalMarketV1_1.Listing)"
+          },
+          "t_struct(Listing)4917_storage": {
+            "label": "struct FraktalMarketV1_1.Listing",
+            "members": [
+              {
+                "label": "tokenAddress",
+                "type": "t_address"
+              },
+              {
+                "label": "price",
+                "type": "t_uint256"
+              },
+              {
+                "label": "numberOfShares",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)4926_storage)))": {
+            "label": "mapping(address => mapping(address => mapping(uint256 => struct FraktalMarketV1_1.AuctionListing)))"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)4926_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct FraktalMarketV1_1.AuctionListing))"
+          },
+          "t_mapping(t_uint256,t_struct(AuctionListing)4926_storage)": {
+            "label": "mapping(uint256 => struct FraktalMarketV1_1.AuctionListing)"
+          },
+          "t_struct(AuctionListing)4926_storage": {
+            "label": "struct FraktalMarketV1_1.AuctionListing",
+            "members": [
+              {
+                "label": "tokenAddress",
+                "type": "t_address"
+              },
+              {
+                "label": "reservePrice",
+                "type": "t_uint256"
+              },
+              {
+                "label": "numberOfShares",
+                "type": "t_uint256"
+              },
+              {
+                "label": "auctionEndTime",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(address => mapping(uint256 => bool))"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_uint256)))": {
+            "label": "mapping(address => mapping(uint256 => mapping(address => uint256)))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_struct(Proposal)4910_storage))": {
+            "label": "mapping(address => mapping(address => struct FraktalMarketV1_1.Proposal))"
+          },
+          "t_mapping(t_address,t_struct(Proposal)4910_storage)": {
+            "label": "mapping(address => struct FraktalMarketV1_1.Proposal)"
+          },
+          "t_struct(Proposal)4910_storage": {
+            "label": "struct FraktalMarketV1_1.Proposal",
+            "members": [
+              {
+                "label": "value",
+                "type": "t_uint256"
+              },
+              {
+                "label": "winner",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
     }
   }
 }
