@@ -28,22 +28,26 @@ async function main(){
     const fraktalMarket = await upgrades.deployProxy(FraktalMarket,[]);//deploy by proxy(upgradable)
     console.log(`FraktalMarket deployed to: ${fraktalMarket.address}`);
 
-    // await hre.run("verify:verify", {
-    //   address: fraktalNFT.address,
-    //   constructorArguments: [],
-    // });
-    // await hre.run("verify:verify", {
-    //   address: paymentSpliter.address,
-    //   constructorArguments: [],
-    // });
-    // await hre.run("verify:verify", {
-    //   address: fraktalFactory.address,
-    //   constructorArguments: [fraktalNFT.address,paymentSpliter.address],
-    // });
-    // await hre.run("verify:verify", {
-    //   address: fraktalMarket.address,
-    //   constructorArguments: [],
-    // });
+    console.log("Wait 1 min for etherscan to propagate deployed bytecode");
+    await new Promise(r=>setTimeout(r,60*1000));//wait 1 min
+    console.log("Verifying..");
+    
+    await hre.run("verify:verify", {
+      address: fraktalNFT.address,
+      constructorArguments: [],
+    });
+    await hre.run("verify:verify", {
+      address: paymentSpliter.address,
+      constructorArguments: [],
+    });
+    await hre.run("verify:verify", {
+      address: fraktalFactory.address,
+      constructorArguments: [fraktalNFT.address,paymentSpliter.address],
+    });
+    await hre.run("verify:verify", {
+      address: fraktalMarket.address,
+      constructorArguments: [],
+    });
 }
 
 main()

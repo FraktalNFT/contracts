@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 contract SampleERC721 is ERC721, ERC721URIStorage{
     constructor() ERC721("CatNFT","CAT"){
         _mint(msg.sender, 1);
-        _setTokenURI(1, "https://opensea-creatures-api.herokuapp.com/api/factory/0");
+        _setTokenURI(1, "QmW7jqaipr7pcZmjAHvbiSbGHMmCuCB8um9YWFfLDSwVM1");
     }
     function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
         super._burn(tokenId);

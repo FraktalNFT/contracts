@@ -149,7 +149,7 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     _totalReleased = _totalReleased + payment;
 
     address payable marketPayable = payable(marketContract);
-    uint16 marketFee = FraktalMarket(marketPayable).fee();
+    uint16 marketFee = FraktalMarketV1_1(marketPayable).fee();
 
     uint256 forMarket = (payment * marketFee )/ 10000;
     uint256 forOperator = payment - forMarket;
