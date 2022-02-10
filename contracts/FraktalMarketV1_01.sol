@@ -87,7 +87,7 @@ ERC1155Holder
 
   function initialize() public initializer {
     __Ownable_init();
-    fee = 100; //1%
+    fee = 500; //5%
   }
 
   // Admin Functions
