@@ -21,6 +21,8 @@ contract FraktalNFT is ERC1155Upgradeable {
   mapping(uint256 => mapping(address => uint256)) lockedToTotal;
   EnumerableSet.AddressSet private holders;
   EnumerableMap.UintToAddressMap private revenues;
+  string public name = "FraktalNFT";
+  string public symbol = "FRAK";
 
   event LockedSharesForTransfer(
     address shareOwner,
@@ -49,7 +51,9 @@ contract FraktalNFT is ERC1155Upgradeable {
     address _creator,
     address _revenueChannelImplementation,
     string calldata uri,
-    uint16 _majority
+    uint16 _majority,
+    string memory _name,
+    string memory _symbol
   ) external initializer {
     __ERC1155_init(uri);
     _mint(_creator, 0, 1, "");
@@ -58,15 +62,21 @@ contract FraktalNFT is ERC1155Upgradeable {
     majority = _majority;
     revenueChannelImplementation = _revenueChannelImplementation;
     holders.add(_creator);
+    if(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked(""))){
+      name = _name;
+    }
+    if(keccak256(abi.encodePacked(_symbol)) != keccak256(abi.encodePacked(""))){
+      symbol = _symbol;
+    }
   }
 
   // User Functions
   ///////////////////////////
   function fraktionalize(address _to, uint256 _tokenId) external {
     require(_tokenId != 0, "NFT");
-    require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
-    require(fraktionalized == false, "fraktionalized");
-    require(indexUsed[_tokenId] == false, "index used");
+    require(this.balanceOf(_msgSender(), 0) == 1);
+    require(fraktionalized == false);
+    require(indexUsed[_tokenId] == false);
     fraktionalized = true;
     sold = false;
     fraktionsIndex = _tokenId;
@@ -81,8 +91,8 @@ contract FraktalNFT is ERC1155Upgradeable {
   }
 
   function setMajority(uint16 newValue) external {
-    require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
-    require(newValue <= 10000*10**18, "Incorrect value");
+    require(this.balanceOf(_msgSender(), 0) == 1);
+    require(newValue <= 10000*10**18);
     require(newValue > 0);
     majority = newValue;
     emit MajorityValueChanged(newValue);
@@ -94,7 +104,7 @@ contract FraktalNFT is ERC1155Upgradeable {
     uint256 bal
   ) external {
     if (_msgSender() != owner) {
-      require(isApprovedForAll(owner, _msgSender()), "not approved");
+      require(isApprovedForAll(owner, _msgSender()));
     }
     _burn(owner, _tokenId, bal);
   }
@@ -120,7 +130,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   function unlockSharesTransfer(address from, address _to) external {
     require(!sold, "item sold");
     if (from != _msgSender()) {
-      require(isApprovedForAll(from, _msgSender()), "not approved");
+      require(isApprovedForAll(from, _msgSender()));
     }
     uint256 balance = lockedShares[fraktionsIndex][from];
     lockedShares[fraktionsIndex][from] -= balance;
@@ -184,14 +194,13 @@ contract FraktalNFT is ERC1155Upgradeable {
     if (from != address(0) && to != address(0)) {
       if (tokenId[0] == 0) {
         if (fraktionalized == true && sold == false) {
-          require((lockedToTotal[fraktionsIndex][to] > 9999), "not approval");
+          require((lockedToTotal[fraktionsIndex][to] > 9999));
         }
       } else {
         require(sold != true, "item sold");
         require(
           (balanceOf(from, tokenId[0]) - lockedShares[fraktionsIndex][from] >=
-            amount[0]),
-          "amount wrong"
+            amount[0])
         );
       }
       holders.add(to);
