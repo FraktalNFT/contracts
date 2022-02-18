@@ -87,7 +87,7 @@ ERC1155Holder
 
   function initialize() public initializer {
     __Ownable_init();
-    fee = 100; //1%
+    fee = 500; //5%
   }
 
   // Admin Functions
@@ -145,6 +145,7 @@ ERC1155Holder
     //give eth minus fee to seller
     if(_auctionReserve>=auctionListed.reservePrice){
       uint256 totalForSeller = _auctionReserve - ((_auctionReserve * fee) / 10000);
+      feesAccrued += _auctionReserve - totalForSeller;
 
       (bool sent,) = _msgSender().call{value: totalForSeller}("");
       auctionSellerRedeemed[_seller][_sellerNonce] = true;
@@ -367,6 +368,13 @@ ERC1155Holder
     emit OfferMade(_msgSender(), tokenAddress, _value);
   }
 
+  function rejectOffer(address from, address to, address tokenAddress) external {
+      FraktalNFT(tokenAddress).unlockSharesTransfer(
+      from,
+      to
+    );
+  }
+
   function voteOffer(address offerer, address tokenAddress) external {
     uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
     Proposal storage offer = offers[offerer][tokenAddress];
@@ -468,8 +476,10 @@ ERC1155Holder
     return (offers[offerer][tokenAddress].value);
   }
   fallback() external payable {
-    }
-
-    receive() external payable {
-    }
+      feesAccrued += msg.value;
+  }
+  
+  receive() external payable {
+      feesAccrued += msg.value;
+  }
 }
