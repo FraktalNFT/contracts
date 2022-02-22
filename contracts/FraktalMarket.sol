@@ -378,10 +378,7 @@ ERC1155Holder
   function voteOffer(address offerer, address tokenAddress) external {
     uint256 fraktionsIndex = FraktalNFT(tokenAddress).fraktionsIndex();
     Proposal storage offer = offers[offerer][tokenAddress];
-    uint256 lockedShares = FraktalNFT(tokenAddress).getLockedShares(
-      fraktionsIndex,
-      _msgSender()
-    );
+    uint256 lockedShares = FraktalNFT(tokenAddress).lockedShares(fraktionsIndex,_msgSender());
     uint256 votesAvailable = FraktalNFT(tokenAddress).balanceOf(
       _msgSender(),
       fraktionsIndex
@@ -391,10 +388,7 @@ ERC1155Holder
       votesAvailable,
       offerer
     );
-    uint256 lockedToOfferer = FraktalNFT(tokenAddress).getLockedToTotal(
-      fraktionsIndex,
-      offerer
-    );
+    uint256 lockedToOfferer = FraktalNFT(tokenAddress).lockedToTotal(fraktionsIndex,offerer);
     bool sold = false;
     if (lockedToOfferer > FraktalNFT(tokenAddress).majority()) {
       FraktalNFT(tokenAddress).sellItem();
@@ -409,10 +403,8 @@ ERC1155Holder
     if (FraktalNFT(tokenAddress).sold()) {
       Proposal memory offer = offers[_msgSender()][tokenAddress];
       require(
-        FraktalNFT(tokenAddress).getLockedToTotal(
-          fraktionsIndex,
-          _msgSender()
-        ) > FraktalNFT(tokenAddress).majority(),
+        FraktalNFT(tokenAddress).lockedToTotal(fraktionsIndex,_msgSender())
+         > FraktalNFT(tokenAddress).majority(),
         "not buyer"
       );
       FraktalNFT(tokenAddress).createRevenuePayment{ value: offer.value }(address(this));

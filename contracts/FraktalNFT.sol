@@ -7,8 +7,12 @@ import "./PaymentSplitterUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
-contract FraktalNFT is ERC1155Upgradeable {
+contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderUpgradeable{
   using EnumerableSet for EnumerableSet.AddressSet;
   using EnumerableMap for EnumerableMap.UintToAddressMap;
   address revenueChannelImplementation;
@@ -17,8 +21,8 @@ contract FraktalNFT is ERC1155Upgradeable {
   uint256 public fraktionsIndex;
   uint16 public majority;
   mapping(uint256 => bool) public indexUsed;
-  mapping(uint256 => mapping(address => uint256)) lockedShares;
-  mapping(uint256 => mapping(address => uint256)) lockedToTotal;
+  mapping(uint256 => mapping(address => uint256)) public lockedShares;
+  mapping(uint256 => mapping(address => uint256)) public lockedToTotal;
   EnumerableSet.AddressSet private holders;
   EnumerableMap.UintToAddressMap private revenues;
   string public name = "FraktalNFT";
@@ -45,7 +49,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   event Defraktionalized(address holder, uint256 index);
   event MajorityValueChanged(uint16 newValue);
 
-  constructor() initializer {}
+  // constructor() initializer {}
 
   function init(
     address _creator,
@@ -73,7 +77,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   // User Functions
   ///////////////////////////
   function fraktionalize(address _to, uint256 _tokenId) external {
-    require(_tokenId != 0, "NFT");
+    require(_tokenId != 0);
     require(this.balanceOf(_msgSender(), 0) == 1);
     require(fraktionalized == false);
     require(indexUsed[_tokenId] == false);
@@ -115,12 +119,11 @@ contract FraktalNFT is ERC1155Upgradeable {
     address _to
   ) external {
     if (from != _msgSender()) {
-      require(isApprovedForAll(from, _msgSender()), "not approved");
+      require(isApprovedForAll(from, _msgSender()));
     }
     require(
       balanceOf(from, fraktionsIndex) - lockedShares[fraktionsIndex][from] >=
-        numShares,
-      "Not balance"
+        numShares
     );
     lockedShares[fraktionsIndex][from] += numShares;
     lockedToTotal[fraktionsIndex][_to] += numShares;
@@ -128,7 +131,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   }
 
   function unlockSharesTransfer(address from, address _to) external {
-    require(!sold, "item sold");
+    require(!sold);
     if (from != _msgSender()) {
       require(isApprovedForAll(from, _msgSender()));
     }
@@ -157,7 +160,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   }
 
   function sellItem() external payable {
-    require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
+    require(this.balanceOf(_msgSender(), 0) == 1);
     sold = true;
     fraktionalized = false;
     indexUsed[fraktionsIndex] = true;
@@ -197,7 +200,7 @@ contract FraktalNFT is ERC1155Upgradeable {
           require((lockedToTotal[fraktionsIndex][to] > 9999));
         }
       } else {
-        require(sold != true, "item sold");
+        require(sold != true);
         require(
           (balanceOf(from, tokenId[0]) - lockedShares[fraktionsIndex][from] >=
             amount[0])
@@ -209,35 +212,64 @@ contract FraktalNFT is ERC1155Upgradeable {
 
   // Getters
   ///////////////////////////
-  function getRevenue(uint256 index) external view returns (address) {
-    return revenues.get(index);
-  }
+  // function getRevenue(uint256 index) external view returns (address) {
+  //   return revenues.get(index);
+  // }
 
   function getFraktions(address who) external view returns (uint256) {
     return this.balanceOf(who, fraktionsIndex);
   }
 
-  function getLockedShares(uint256 index, address who)
-    external
-    view
-    returns (uint256)
-  {
-    return lockedShares[index][who];
+  // function getLockedShares(uint256 index, address who)
+  //   external
+  //   view
+  //   returns (uint256)
+  // {
+  //   return lockedShares[index][who];
+  // }
+
+  // function getLockedToTotal(uint256 index, address who)
+  //   external
+  //   view
+  //   returns (uint256)
+  // {
+  //   return lockedToTotal[index][who];
+  // }
+  /**
+  *@notice transfer contained ERC721 to the Fraktal owner with given address and index
+  *@param contractAddress address of ERC721 contained
+  *@param index index of the ERC721
+   */
+  //todo: Should block if collateral is being claimed
+  function claimContainedERC721(address contractAddress, uint256 index) external{
+    require(this.balanceOf(msg.sender, 0) == 1);
+    require(IERC721(contractAddress).ownerOf(index) == address(this));
+    IERC721(contractAddress).safeTransferFrom(address(this), msg.sender, index);
   }
 
-  function getLockedToTotal(uint256 index, address who)
-    external
-    view
-    returns (uint256)
-  {
-    return lockedToTotal[index][who];
+  /**
+  *@notice transfer contained ERC1155 to the Fraktal owner with given address and index
+  *@param contractAddress address of ERC1155 contained
+  *@param index index of the ERC1155
+   */
+  //todo: Should block if collateral is being claimed
+  function claimContainedERC1155(address contractAddress, uint256 index) external{
+    require(this.balanceOf(msg.sender, 0) == 1);
+    uint256 ownedAmount = IERC1155(contractAddress).balanceOf(address(this), index);
+
+    require(ownedAmount > 0);
+    IERC1155(contractAddress).safeTransferFrom(address(this), msg.sender, index, ownedAmount,"");
   }
 
-  function getStatus() external view returns (bool) {
-    return sold;
+  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, ERC1155ReceiverUpgradeable) returns (bool) {
+        return ERC1155Upgradeable.supportsInterface(interfaceId) || ERC1155ReceiverUpgradeable.supportsInterface(interfaceId);
   }
 
-  function getFraktionsIndex() external view returns (uint256) {
-    return fraktionsIndex;
-  }
+  // function getStatus() external view returns (bool) {
+  //   return sold;
+  // }
+
+  // function getFraktionsIndex() external view returns (uint256) {
+  //   return fraktionsIndex;
+  // }
 }

@@ -5,12 +5,14 @@ import './FraktalNFT.sol';
 import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "hardhat/console.sol";
 
-contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
+contract FraktalFactory is Initializable,OwnableUpgradeable, ERC1155HolderUpgradeable, ERC721HolderUpgradeable {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     address public Fraktalimplementation;
     address public revenueChannelImplementation;
@@ -34,7 +36,12 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
     event RevenuesProtocolUpgraded(address _newAddress);
     event FraktalProtocolUpgraded(address _newAddress);
 
-    constructor(address _implementation, address _revenueChannelImplementation) {
+    // constructor(address _implementation, address _revenueChannelImplementation) {
+    //     Fraktalimplementation = _implementation;
+    //     revenueChannelImplementation = _revenueChannelImplementation;
+    // }
+
+    function initialize(address _implementation, address _revenueChannelImplementation) public initializer {
         Fraktalimplementation = _implementation;
         revenueChannelImplementation = _revenueChannelImplementation;
     }
@@ -66,12 +73,13 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
       string memory symbol = ERC721Upgradeable(_tokenAddress).symbol();
       name = string(abi.encodePacked("FraktalNFT(",name,")"));
       symbol = string(abi.encodePacked("F",symbol,"#",uint2str(_tokenId)));
-      ERC721Upgradeable(_tokenAddress).transferFrom(_msgSender(), address(this), _tokenId);
       _clone = this.mint(uri, majority, name, symbol);
       ERC721Imported memory nft = ERC721Imported({
         tokenAddress: _tokenAddress,
         tokenIndex: _tokenId
         });
+      ERC721Upgradeable(_tokenAddress).transferFrom(_msgSender(), _clone, _tokenId);
+      // ERC721Upgradeable(_tokenAddress).transferFrom(_msgSender(), address(this), _tokenId);
       lockedERC721s[_clone] = nft;
       FraktalNFT(_clone).safeTransferFrom(address(this), _msgSender(), 0, 1, '');
       emit ERC721Locked(_msgSender(), _tokenAddress, _clone, _tokenId);
@@ -93,7 +101,8 @@ contract FraktalFactory is Ownable, ERC1155Holder, ERC721Holder {
       ERC721Imported storage collateralNft = lockedERC721s[fraktalAddress];
       address abandonedFraktal = collateralNft.tokenAddress;
       uint256 abandonedIndex = collateralNft.tokenIndex;
-      ERC721Upgradeable(collateralNft.tokenAddress).transferFrom(address(this), _msgSender(), collateralNft.tokenIndex);
+      console.log("fraktal %s, collateral %s, contract %s",fraktalAddress,abandonedFraktal,address(this));
+      ERC721Upgradeable(collateralNft.tokenAddress).transferFrom(fraktalAddress, _msgSender(), collateralNft.tokenIndex);
       FraktalNFT(fraktalAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
       fraktalNFTs.set(_tokenId, address(0));
       lockedERC721s[fraktalAddress] = ERC721Imported(address(0),0);
