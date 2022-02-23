@@ -20,13 +20,15 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
   bool public sold;
   uint256 public fraktionsIndex;
   uint16 public majority;
-  mapping(uint256 => bool) public indexUsed;
+  mapping(uint256 => bool) indexUsed;
   mapping(uint256 => mapping(address => uint256)) public lockedShares;
   mapping(uint256 => mapping(address => uint256)) public lockedToTotal;
   EnumerableSet.AddressSet private holders;
   EnumerableMap.UintToAddressMap private revenues;
   string public name = "FraktalNFT";
   string public symbol = "FRAK";
+  address public factory;
+  address collateral;
 
   event LockedSharesForTransfer(
     address shareOwner,
@@ -66,21 +68,26 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
     majority = _majority;
     revenueChannelImplementation = _revenueChannelImplementation;
     holders.add(_creator);
-    if(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked(""))){
+    if(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")) && 
+    keccak256(abi.encodePacked(_symbol)) != keccak256(abi.encodePacked(""))
+    ){
       name = _name;
-    }
-    if(keccak256(abi.encodePacked(_symbol)) != keccak256(abi.encodePacked(""))){
       symbol = _symbol;
     }
+    factory = msg.sender;//factory as msg.sender
   }
 
   // User Functions
   ///////////////////////////
   function fraktionalize(address _to, uint256 _tokenId) external {
-    require(_tokenId != 0);
-    require(this.balanceOf(_msgSender(), 0) == 1);
-    require(fraktionalized == false);
-    require(indexUsed[_tokenId] == false);
+    require((_tokenId != 0) && 
+    (this.balanceOf(_msgSender(), 0) == 1) && 
+    !fraktionalized && 
+    (indexUsed[_tokenId] == false)
+    );
+    // require(this.balanceOf(_msgSender(), 0) == 1);
+    // require(fraktionalized == false);
+    // require(indexUsed[_tokenId] == false);
     fraktionalized = true;
     sold = false;
     fraktionsIndex = _tokenId;
@@ -95,9 +102,11 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
   }
 
   function setMajority(uint16 newValue) external {
-    require(this.balanceOf(_msgSender(), 0) == 1);
-    require(newValue <= 10000*10**18);
-    require(newValue > 0);
+    require((this.balanceOf(_msgSender(), 0) == 1)&&
+    (newValue <= 10000*10**18)
+    );
+    // require(newValue <= 10000*10**18);
+    // require(newValue > 0);
     majority = newValue;
     emit MajorityValueChanged(newValue);
   }
@@ -107,9 +116,9 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
     uint256 _tokenId,
     uint256 bal
   ) external {
-    if (_msgSender() != owner) {
-      require(isApprovedForAll(owner, _msgSender()));
-    }
+    // if (_msgSender() != owner) {
+    //   require(isApprovedForAll(owner, _msgSender()));
+    // }
     _burn(owner, _tokenId, bal);
   }
 
@@ -172,8 +181,8 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
     address[] memory remove = new address[](listLength);
     uint16 removeIndex = 0;
     for (uint256 i = 0; i < listLength; i++) {
-      uint256 bal = this.balanceOf(holders.at(i), fraktionsIndex);
-      if (bal < 1) {
+      // uint256 bal = this.balanceOf(holders.at(i), fraktionsIndex);
+      if (this.balanceOf(holders.at(i), fraktionsIndex) < 1) {
         remove[removeIndex] = holders.at(i);
         removeIndex++;
       }
@@ -216,9 +225,9 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
   //   return revenues.get(index);
   // }
 
-  function getFraktions(address who) external view returns (uint256) {
-    return this.balanceOf(who, fraktionsIndex);
-  }
+  // function getFraktions(address who) external view returns (uint256) {
+  //   return this.balanceOf(who, fraktionsIndex);
+  // }
 
   // function getLockedShares(uint256 index, address who)
   //   external
@@ -242,8 +251,12 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
    */
   //todo: Should block if collateral is being claimed
   function claimContainedERC721(address contractAddress, uint256 index) external{
-    require(this.balanceOf(msg.sender, 0) == 1);
-    require(IERC721(contractAddress).ownerOf(index) == address(this));
+    if(msg.sender != factory){
+      require(contractAddress != collateral);
+    }
+    require((this.balanceOf(msg.sender, 0) == 1) && !fraktionalized && (IERC721(contractAddress).ownerOf(index) == address(this)));
+    // require(fraktionalized==false);
+    // require(IERC721(contractAddress).ownerOf(index) == address(this));
     IERC721(contractAddress).safeTransferFrom(address(this), msg.sender, index);
   }
 
@@ -253,16 +266,21 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
   *@param index index of the ERC1155
    */
   //todo: Should block if collateral is being claimed
-  function claimContainedERC1155(address contractAddress, uint256 index) external{
-    require(this.balanceOf(msg.sender, 0) == 1);
-    uint256 ownedAmount = IERC1155(contractAddress).balanceOf(address(this), index);
-
-    require(ownedAmount > 0);
-    IERC1155(contractAddress).safeTransferFrom(address(this), msg.sender, index, ownedAmount,"");
+  function claimContainedERC1155(address contractAddress, uint256 index, uint256 amount) external{
+    if(msg.sender != factory){
+      require(contractAddress != collateral);
+    }
+    require((this.balanceOf(msg.sender, 0) == 1) && !fraktionalized);
+    IERC1155(contractAddress).safeTransferFrom(address(this), msg.sender, index, amount,"");
   }
 
   function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, ERC1155ReceiverUpgradeable) returns (bool) {
         return ERC1155Upgradeable.supportsInterface(interfaceId) || ERC1155ReceiverUpgradeable.supportsInterface(interfaceId);
+  }
+
+  function setCollateral(address _collateral ) external{
+    require(msg.sender == factory);
+    collateral = _collateral;
   }
 
   // function getStatus() external view returns (bool) {

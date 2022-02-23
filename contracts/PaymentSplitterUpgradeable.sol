@@ -135,7 +135,8 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     address payable operator = payable(_msgSender());
     require(_shares[operator] > 0, "PaymentSplitter: account has no shares");
     if (buyout) {
-      uint256 bal = IFraktalNFT(tokenParent).getFraktions(_msgSender());
+      // uint256 bal = IFraktalNFT(tokenParent).getFraktions(_msgSender());
+      uint256 bal = FraktalNFT(tokenParent).balanceOf(_msgSender(),FraktalNFT(tokenParent).fraktionsIndex());
       IFraktalNFT(tokenParent).soldBurn(_msgSender(), fraktionsIndex, bal);
     }
 

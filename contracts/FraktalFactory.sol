@@ -10,7 +10,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgra
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "hardhat/console.sol";
 
 contract FraktalFactory is Initializable,OwnableUpgradeable, ERC1155HolderUpgradeable, ERC721HolderUpgradeable {
     using EnumerableMap for EnumerableMap.UintToAddressMap;
@@ -80,18 +79,21 @@ contract FraktalFactory is Initializable,OwnableUpgradeable, ERC1155HolderUpgrad
         });
       ERC721Upgradeable(_tokenAddress).transferFrom(_msgSender(), _clone, _tokenId);
       // ERC721Upgradeable(_tokenAddress).transferFrom(_msgSender(), address(this), _tokenId);
+      FraktalNFT(_clone).setCollateral(_tokenAddress);
       lockedERC721s[_clone] = nft;
       FraktalNFT(_clone).safeTransferFrom(address(this), _msgSender(), 0, 1, '');
       emit ERC721Locked(_msgSender(), _tokenAddress, _clone, _tokenId);
     }
     function importERC1155(address _tokenAddress, uint256 _tokenId, uint16 majority) external returns (address _clone) {
       string memory uri = ERC1155Upgradeable(_tokenAddress).uri(_tokenId);
-      ERC1155Upgradeable(_tokenAddress).safeTransferFrom(_msgSender(), address(this), _tokenId, 1, '');
       _clone = this.mint(uri, majority,"","");
       ERC1155Imported memory nft = ERC1155Imported({
         tokenAddress: _tokenAddress,
         tokenIndex: _tokenId
         });
+      ERC1155Upgradeable(_tokenAddress).safeTransferFrom(_msgSender(), _clone, _tokenId, 1, '');
+      // ERC1155Upgradeable(_tokenAddress).safeTransferFrom(_msgSender(), address(this), _tokenId, 1, '');
+      FraktalNFT(_clone).setCollateral(_tokenAddress);
       lockedERC1155s[_clone] = nft;
       FraktalNFT(_clone).safeTransferFrom(address(this), _msgSender(), 0, 1, '');
       emit ERC1155Locked(_msgSender(), _tokenAddress, _clone, _tokenId);
@@ -101,9 +103,9 @@ contract FraktalFactory is Initializable,OwnableUpgradeable, ERC1155HolderUpgrad
       ERC721Imported storage collateralNft = lockedERC721s[fraktalAddress];
       address abandonedFraktal = collateralNft.tokenAddress;
       uint256 abandonedIndex = collateralNft.tokenIndex;
-      console.log("fraktal %s, collateral %s, contract %s",fraktalAddress,abandonedFraktal,address(this));
-      ERC721Upgradeable(collateralNft.tokenAddress).transferFrom(fraktalAddress, _msgSender(), collateralNft.tokenIndex);
       FraktalNFT(fraktalAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
+      FraktalNFT(fraktalAddress).claimContainedERC721(abandonedFraktal,abandonedIndex);
+      ERC721Upgradeable(collateralNft.tokenAddress).transferFrom(address(this), _msgSender(), collateralNft.tokenIndex);
       fraktalNFTs.set(_tokenId, address(0));
       lockedERC721s[fraktalAddress] = ERC721Imported(address(0),0);
       emit ERC721UnLocked(_msgSender(), _tokenId, abandonedFraktal, abandonedIndex);
@@ -113,8 +115,10 @@ contract FraktalFactory is Initializable,OwnableUpgradeable, ERC1155HolderUpgrad
       ERC1155Imported storage collateralNft = lockedERC1155s[fraktalAddress];
       address abandonedFraktal = collateralNft.tokenAddress;
       uint256 abandonedIndex = collateralNft.tokenIndex;
-      ERC1155Upgradeable(collateralNft.tokenAddress).safeTransferFrom(address(this), _msgSender(), collateralNft.tokenIndex,1,'');
       FraktalNFT(fraktalAddress).safeTransferFrom(_msgSender(), address(this),0,1,'');
+      uint256 balance = ERC1155Upgradeable(collateralNft.tokenAddress).balanceOf(fraktalAddress, abandonedIndex);
+      FraktalNFT(fraktalAddress).claimContainedERC1155(abandonedFraktal,abandonedIndex,balance);
+      ERC1155Upgradeable(collateralNft.tokenAddress).safeTransferFrom(address(this), _msgSender(), collateralNft.tokenIndex,balance,'');
       fraktalNFTs.set(_tokenId, address(0));
       lockedERC1155s[fraktalAddress] = ERC1155Imported(address(0),0);
       emit ERC1155UnLocked(_msgSender(), fraktalAddress, abandonedFraktal, abandonedIndex);
