@@ -37,7 +37,7 @@ module.exports = {
   settings: {
     optimizer: {
       enabled: true,
-      runs: 133,
+      runs: 88888,
     },
   },
   contractSizer: {

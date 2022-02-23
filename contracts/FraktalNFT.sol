@@ -7,8 +7,12 @@ import "./PaymentSplitterUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
-contract FraktalNFT is ERC1155Upgradeable {
+contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderUpgradeable{
   using EnumerableSet for EnumerableSet.AddressSet;
   using EnumerableMap for EnumerableMap.UintToAddressMap;
   address revenueChannelImplementation;
@@ -16,13 +20,15 @@ contract FraktalNFT is ERC1155Upgradeable {
   bool public sold;
   uint256 public fraktionsIndex;
   uint16 public majority;
-  mapping(uint256 => bool) public indexUsed;
-  mapping(uint256 => mapping(address => uint256)) lockedShares;
-  mapping(uint256 => mapping(address => uint256)) lockedToTotal;
+  mapping(uint256 => bool) indexUsed;
+  mapping(uint256 => mapping(address => uint256)) public lockedShares;
+  mapping(uint256 => mapping(address => uint256)) public lockedToTotal;
   EnumerableSet.AddressSet private holders;
   EnumerableMap.UintToAddressMap private revenues;
   string public name = "FraktalNFT";
   string public symbol = "FRAK";
+  address public factory;
+  address collateral;
 
   event LockedSharesForTransfer(
     address shareOwner,
@@ -45,7 +51,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   event Defraktionalized(address holder, uint256 index);
   event MajorityValueChanged(uint16 newValue);
 
-  constructor() initializer {}
+  // constructor() initializer {}
 
   function init(
     address _creator,
@@ -62,21 +68,26 @@ contract FraktalNFT is ERC1155Upgradeable {
     majority = _majority;
     revenueChannelImplementation = _revenueChannelImplementation;
     holders.add(_creator);
-    if(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked(""))){
+    if(keccak256(abi.encodePacked(_name)) != keccak256(abi.encodePacked("")) && 
+    keccak256(abi.encodePacked(_symbol)) != keccak256(abi.encodePacked(""))
+    ){
       name = _name;
-    }
-    if(keccak256(abi.encodePacked(_symbol)) != keccak256(abi.encodePacked(""))){
       symbol = _symbol;
     }
+    factory = msg.sender;//factory as msg.sender
   }
 
   // User Functions
   ///////////////////////////
   function fraktionalize(address _to, uint256 _tokenId) external {
-    require(_tokenId != 0, "NFT");
-    require(this.balanceOf(_msgSender(), 0) == 1);
-    require(fraktionalized == false);
-    require(indexUsed[_tokenId] == false);
+    require((_tokenId != 0) && 
+    (this.balanceOf(_msgSender(), 0) == 1) && 
+    !fraktionalized && 
+    (indexUsed[_tokenId] == false)
+    );
+    // require(this.balanceOf(_msgSender(), 0) == 1);
+    // require(fraktionalized == false);
+    // require(indexUsed[_tokenId] == false);
     fraktionalized = true;
     sold = false;
     fraktionsIndex = _tokenId;
@@ -91,9 +102,11 @@ contract FraktalNFT is ERC1155Upgradeable {
   }
 
   function setMajority(uint16 newValue) external {
-    require(this.balanceOf(_msgSender(), 0) == 1);
-    require(newValue <= 10000*10**18);
-    require(newValue > 0);
+    require((this.balanceOf(_msgSender(), 0) == 1)&&
+    (newValue <= 10000*10**18)
+    );
+    // require(newValue <= 10000*10**18);
+    // require(newValue > 0);
     majority = newValue;
     emit MajorityValueChanged(newValue);
   }
@@ -103,9 +116,9 @@ contract FraktalNFT is ERC1155Upgradeable {
     uint256 _tokenId,
     uint256 bal
   ) external {
-    if (_msgSender() != owner) {
-      require(isApprovedForAll(owner, _msgSender()));
-    }
+    // if (_msgSender() != owner) {
+    //   require(isApprovedForAll(owner, _msgSender()));
+    // }
     _burn(owner, _tokenId, bal);
   }
 
@@ -115,12 +128,11 @@ contract FraktalNFT is ERC1155Upgradeable {
     address _to
   ) external {
     if (from != _msgSender()) {
-      require(isApprovedForAll(from, _msgSender()), "not approved");
+      require(isApprovedForAll(from, _msgSender()));
     }
     require(
       balanceOf(from, fraktionsIndex) - lockedShares[fraktionsIndex][from] >=
-        numShares,
-      "Not balance"
+        numShares
     );
     lockedShares[fraktionsIndex][from] += numShares;
     lockedToTotal[fraktionsIndex][_to] += numShares;
@@ -128,7 +140,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   }
 
   function unlockSharesTransfer(address from, address _to) external {
-    require(!sold, "item sold");
+    require(!sold);
     if (from != _msgSender()) {
       require(isApprovedForAll(from, _msgSender()));
     }
@@ -157,7 +169,7 @@ contract FraktalNFT is ERC1155Upgradeable {
   }
 
   function sellItem() external payable {
-    require(this.balanceOf(_msgSender(), 0) == 1, "not owner");
+    require(this.balanceOf(_msgSender(), 0) == 1);
     sold = true;
     fraktionalized = false;
     indexUsed[fraktionsIndex] = true;
@@ -169,8 +181,8 @@ contract FraktalNFT is ERC1155Upgradeable {
     address[] memory remove = new address[](listLength);
     uint16 removeIndex = 0;
     for (uint256 i = 0; i < listLength; i++) {
-      uint256 bal = this.balanceOf(holders.at(i), fraktionsIndex);
-      if (bal < 1) {
+      // uint256 bal = this.balanceOf(holders.at(i), fraktionsIndex);
+      if (this.balanceOf(holders.at(i), fraktionsIndex) < 1) {
         remove[removeIndex] = holders.at(i);
         removeIndex++;
       }
@@ -197,7 +209,7 @@ contract FraktalNFT is ERC1155Upgradeable {
           require((lockedToTotal[fraktionsIndex][to] > 9999));
         }
       } else {
-        require(sold != true, "item sold");
+        require(sold != true);
         require(
           (balanceOf(from, tokenId[0]) - lockedShares[fraktionsIndex][from] >=
             amount[0])
@@ -209,35 +221,73 @@ contract FraktalNFT is ERC1155Upgradeable {
 
   // Getters
   ///////////////////////////
-  function getRevenue(uint256 index) external view returns (address) {
-    return revenues.get(index);
+  // function getRevenue(uint256 index) external view returns (address) {
+  //   return revenues.get(index);
+  // }
+
+  // function getFraktions(address who) external view returns (uint256) {
+  //   return this.balanceOf(who, fraktionsIndex);
+  // }
+
+  // function getLockedShares(uint256 index, address who)
+  //   external
+  //   view
+  //   returns (uint256)
+  // {
+  //   return lockedShares[index][who];
+  // }
+
+  // function getLockedToTotal(uint256 index, address who)
+  //   external
+  //   view
+  //   returns (uint256)
+  // {
+  //   return lockedToTotal[index][who];
+  // }
+  /**
+  *@notice transfer contained ERC721 to the Fraktal owner with given address and index
+  *@param contractAddress address of ERC721 contained
+  *@param index index of the ERC721
+   */
+  //todo: Should block if collateral is being claimed
+  function claimContainedERC721(address contractAddress, uint256 index) external{
+    if(msg.sender != factory){
+      require(contractAddress != collateral);
+    }
+    require((this.balanceOf(msg.sender, 0) == 1) && !fraktionalized && (IERC721(contractAddress).ownerOf(index) == address(this)));
+    // require(fraktionalized==false);
+    // require(IERC721(contractAddress).ownerOf(index) == address(this));
+    IERC721(contractAddress).safeTransferFrom(address(this), msg.sender, index);
   }
 
-  function getFraktions(address who) external view returns (uint256) {
-    return this.balanceOf(who, fraktionsIndex);
+  /**
+  *@notice transfer contained ERC1155 to the Fraktal owner with given address and index
+  *@param contractAddress address of ERC1155 contained
+  *@param index index of the ERC1155
+   */
+  //todo: Should block if collateral is being claimed
+  function claimContainedERC1155(address contractAddress, uint256 index, uint256 amount) external{
+    if(msg.sender != factory){
+      require(contractAddress != collateral);
+    }
+    require((this.balanceOf(msg.sender, 0) == 1) && !fraktionalized);
+    IERC1155(contractAddress).safeTransferFrom(address(this), msg.sender, index, amount,"");
   }
 
-  function getLockedShares(uint256 index, address who)
-    external
-    view
-    returns (uint256)
-  {
-    return lockedShares[index][who];
+  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, ERC1155ReceiverUpgradeable) returns (bool) {
+        return ERC1155Upgradeable.supportsInterface(interfaceId) || ERC1155ReceiverUpgradeable.supportsInterface(interfaceId);
   }
 
-  function getLockedToTotal(uint256 index, address who)
-    external
-    view
-    returns (uint256)
-  {
-    return lockedToTotal[index][who];
+  function setCollateral(address _collateral ) external{
+    require(msg.sender == factory);
+    collateral = _collateral;
   }
 
-  function getStatus() external view returns (bool) {
-    return sold;
-  }
+  // function getStatus() external view returns (bool) {
+  //   return sold;
+  // }
 
-  function getFraktionsIndex() external view returns (uint256) {
-    return fraktionsIndex;
-  }
+  // function getFraktionsIndex() external view returns (uint256) {
+  //   return fraktionsIndex;
+  // }
 }

@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "./IFraktalNFT.sol";
-import "./FraktalMarketV1_01.sol";
+import "./FraktalNFT.sol";
+import "./FraktalMarket.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -50,8 +51,8 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
   {
     __PaymentSplitter_init(payees, shares_);
     tokenParent = _msgSender();
-    fraktionsIndex = IFraktalNFT(_msgSender()).getFraktionsIndex();
-    buyout = IFraktalNFT(_msgSender()).getStatus();
+    fraktionsIndex = FraktalNFT(_msgSender()).fraktionsIndex();
+    buyout = FraktalNFT(_msgSender()).sold();
     marketContract = _marketContract;
   }
 
@@ -134,7 +135,8 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     address payable operator = payable(_msgSender());
     require(_shares[operator] > 0, "PaymentSplitter: account has no shares");
     if (buyout) {
-      uint256 bal = IFraktalNFT(tokenParent).getFraktions(_msgSender());
+      // uint256 bal = IFraktalNFT(tokenParent).getFraktions(_msgSender());
+      uint256 bal = FraktalNFT(tokenParent).balanceOf(_msgSender(),FraktalNFT(tokenParent).fraktionsIndex());
       IFraktalNFT(tokenParent).soldBurn(_msgSender(), fraktionsIndex, bal);
     }
 
@@ -149,7 +151,7 @@ contract PaymentSplitterUpgradeable is Initializable, ContextUpgradeable {
     _totalReleased = _totalReleased + payment;
 
     address payable marketPayable = payable(marketContract);
-    uint16 marketFee = FraktalMarketV1_1(marketPayable).fee();
+    uint16 marketFee = FraktalMarket(marketPayable).fee();
 
     uint256 forMarket = (payment * marketFee )/ 10000;
     uint256 forOperator = payment - forMarket;
