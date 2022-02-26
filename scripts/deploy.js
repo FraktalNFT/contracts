@@ -21,7 +21,8 @@ async function main(){
     const paymentSpliter = await PaymentSpliter.deploy();
     console.log(`PaymentSpliter deployed to: ${paymentSpliter.address}`);
 
-    const fraktalFactory = await FraktalFactory.deploy(fraktalNFT.address, paymentSpliter.address);
+    // const fraktalFactory = await FraktalFactory.deploy(fraktalNFT.address, paymentSpliter.address);
+    const fraktalFactory = await upgrades.deployProxy(FraktalFactory,[fraktalNFT.address, paymentSpliter.address]);//deploy by proxy(upgradable)
     console.log(`FraktalFactory deployed to: ${fraktalFactory.address}`);
 
     // const fraktalMarket = await FraktalMarket.deploy();

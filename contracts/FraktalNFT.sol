@@ -20,7 +20,7 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
   bool public sold;
   uint256 public fraktionsIndex;
   uint16 public majority;
-  mapping(uint256 => bool) indexUsed;
+  mapping(uint256 => bool) public indexUsed;
   mapping(uint256 => mapping(address => uint256)) public lockedShares;
   mapping(uint256 => mapping(address => uint256)) public lockedToTotal;
   EnumerableSet.AddressSet private holders;
