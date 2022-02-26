@@ -116,9 +116,9 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
     uint256 _tokenId,
     uint256 bal
   ) external {
-    // if (_msgSender() != owner) {
-    //   require(isApprovedForAll(owner, _msgSender()));
-    // }
+    if (_msgSender() != owner) {
+      require(isApprovedForAll(owner, _msgSender()));
+    }
     _burn(owner, _tokenId, bal);
   }
 
@@ -177,18 +177,13 @@ contract FraktalNFT is ERC1155Upgradeable,ERC721HolderUpgradeable,ERC1155HolderU
   }
 
   function cleanUpHolders() internal {
-    uint256 listLength = holders.length();
-    address[] memory remove = new address[](listLength);
-    uint16 removeIndex = 0;
-    for (uint256 i = 0; i < listLength; i++) {
-      // uint256 bal = this.balanceOf(holders.at(i), fraktionsIndex);
-      if (this.balanceOf(holders.at(i), fraktionsIndex) < 1) {
-        remove[removeIndex] = holders.at(i);
-        removeIndex++;
+    uint16 cur = 0;
+    while(cur < holders.length()){
+      if (this.balanceOf(holders.at(cur), fraktionsIndex) < 1) {
+        holders.remove(holders.at(cur));
+        cur=0;
       }
-    }
-    for (uint256 i = 0; i < removeIndex; i++) {
-      holders.remove(remove[i]);
+      cur++;
     }
   }
 
