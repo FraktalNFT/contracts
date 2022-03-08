@@ -11,7 +11,6 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-
 contract FraktalMarket is
 Initializable,
 OwnableUpgradeable,
@@ -29,12 +28,14 @@ ERC1155Holder
     address tokenAddress;
     uint256 price;
     uint256 numberOfShares;
+    string name;
   }
   struct AuctionListing {
     address tokenAddress;
     uint256 reservePrice;
     uint256 numberOfShares;
     uint256 auctionEndTime;
+    string name;
   }
   mapping(address => mapping(address => Listing)) listings;
 
@@ -61,7 +62,8 @@ ERC1155Holder
     address owner,
     address tokenAddress,
     uint256 price,
-    uint256 amountOfShares
+    uint256 amountOfShares,
+    string name
   );
   event AuctionItemListed(
     address owner,
@@ -69,7 +71,8 @@ ERC1155Holder
     uint256 reservePrice,
     uint256 amountOfShares,
     uint256 endTime,
-    uint256 nonce
+    uint256 nonce,
+    string name
   );
   event AuctionContribute(
     address participant,
@@ -83,7 +86,6 @@ ERC1155Holder
   event AdminWithdrawFees(uint256 feesAccrued);
   event OfferMade(address offerer, address tokenAddress, uint256 value);
   event OfferVoted(address voter, address offerer, address tokenAddress, bool sold);
-
 
   function initialize() public initializer {
     __Ownable_init();
@@ -155,7 +157,7 @@ ERC1155Holder
     //auction failed
     else{
       auctionSellerRedeemed[_seller][_sellerNonce] = true;
-      
+
       FraktalNFT(_tokenAddress).safeTransferFrom(
       address(this),
       _msgSender(),
@@ -278,7 +280,8 @@ ERC1155Holder
   function listItem(
     address _tokenAddress,
     uint256 _price,//wei per frak
-    uint256 _numberOfShares
+    uint256 _numberOfShares,
+    string memory _name
   ) payable external returns (bool) {
     require(msg.value >= listingFee);
     require(_price>0);
@@ -296,17 +299,19 @@ ERC1155Holder
     Listing memory listing = Listing({
       tokenAddress: _tokenAddress,
       price: _price,
-      numberOfShares: _numberOfShares
+      numberOfShares: _numberOfShares,
+      name: _name
     });
     listings[_tokenAddress][_msgSender()] = listing;
-    emit ItemListed(_msgSender(), _tokenAddress, _price, _numberOfShares);
+    emit ItemListed(_msgSender(), _tokenAddress, _price, _numberOfShares, _name);
     return true;
   }
 
   function listItemAuction(
     address _tokenAddress,
     uint256 _reservePrice,
-    uint256 _numberOfShares
+    uint256 _numberOfShares,
+    string memory _name
   ) payable external returns (uint256) {
     require(msg.value >= listingFee);
     uint256 fraktionsIndex = FraktalNFT(_tokenAddress).fraktionsIndex();
@@ -327,7 +332,8 @@ ERC1155Holder
       tokenAddress: _tokenAddress,
       reservePrice: _reservePrice,
       numberOfShares: _numberOfShares,
-      auctionEndTime: _endTime
+      auctionEndTime: _endTime,
+      name: _name
     });
 
     FraktalNFT(_tokenAddress).safeTransferFrom(
@@ -337,7 +343,7 @@ ERC1155Holder
       _numberOfShares,
       ""
     );
-    emit AuctionItemListed(_msgSender(), _tokenAddress, _reservePrice, _numberOfShares, _endTime, sellerNonce);
+    emit AuctionItemListed(_msgSender(), _tokenAddress, _reservePrice, _numberOfShares, _endTime, sellerNonce, _name);
     return auctionNonce[_msgSender()];
   }
 
@@ -422,7 +428,7 @@ ERC1155Holder
 
   function unlistItem(address tokenAddress) external {
     delete listings[tokenAddress][_msgSender()];
-    emit ItemListed(_msgSender(), tokenAddress, 0, 0);
+    emit ItemListed(_msgSender(), tokenAddress, 0, 0, "");
   }
 
   function unlistAuctionItem(address tokenAddress,uint256 sellerNonce) external {
@@ -431,7 +437,7 @@ ERC1155Holder
 
     auctionListed.auctionEndTime = block.timestamp;
 
-    emit AuctionItemListed(_msgSender(), tokenAddress, 0, 0, auctionListed.auctionEndTime,sellerNonce);
+    emit AuctionItemListed(_msgSender(), tokenAddress, 0, 0, auctionListed.auctionEndTime,sellerNonce, "");
   }
 
   // GETTERS
@@ -470,7 +476,7 @@ ERC1155Holder
   fallback() external payable {
       feesAccrued += msg.value;
   }
-  
+
   receive() external payable {
       feesAccrued += msg.value;
   }
