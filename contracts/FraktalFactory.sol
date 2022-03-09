@@ -41,8 +41,9 @@ contract FraktalFactory is Initializable,OwnableUpgradeable, ERC1155HolderUpgrad
     // }
 
     function initialize(address _implementation, address _revenueChannelImplementation) public initializer {
-        Fraktalimplementation = _implementation;
-        revenueChannelImplementation = _revenueChannelImplementation;
+      __Ownable_init();
+      Fraktalimplementation = _implementation;
+      revenueChannelImplementation = _revenueChannelImplementation;
     }
 
 // Admin Functions
