@@ -15,6 +15,12 @@ async function main(){
     const FraktalFactory = await hre.ethers.getContractFactory("FraktalFactory");
     const FraktalMarket = await hre.ethers.getContractFactory("FraktalMarket");
 
+    const StakingPoolForUniswapV2Tokens = await hre.ethers.getContractFactory("StakingPoolForUniswapV2Tokens");
+    const FraktalAirdrop = await hre.ethers.getContractFactory("FraktalAirdrop");
+    const FeeSharingSystem = await hre.ethers.getContractFactory("FeeSharingSystem");
+    const FeeSharingSetter = await hre.ethers.getContractFactory("FeeSharingSetter");
+
+
     const fraktalNFT = await FraktalNFT.deploy();
     console.log(`FraktalNFT deployed to: ${fraktalNFT.address}`);
 
@@ -29,26 +35,26 @@ async function main(){
     const fraktalMarket = await upgrades.deployProxy(FraktalMarket,[]);//deploy by proxy(upgradable)
     console.log(`FraktalMarket deployed to: ${fraktalMarket.address}`);
 
-    console.log("Wait 1 min for etherscan to propagate deployed bytecode");
-    await new Promise(r=>setTimeout(r,60*1000));//wait 1 min
-    console.log("Verifying..");
+    // console.log("Wait 1 min for etherscan to propagate deployed bytecode");
+    // await new Promise(r=>setTimeout(r,60*1000));//wait 1 min
+    // console.log("Verifying..");
     
-    await hre.run("verify:verify", {
-      address: fraktalNFT.address,
-      constructorArguments: [],
-    });
-    await hre.run("verify:verify", {
-      address: paymentSpliter.address,
-      constructorArguments: [],
-    });
-    await hre.run("verify:verify", {
-      address: fraktalFactory.address,
-      constructorArguments: [fraktalNFT.address,paymentSpliter.address],
-    });
-    await hre.run("verify:verify", {
-      address: fraktalMarket.address,
-      constructorArguments: [],
-    });
+    // await hre.run("verify:verify", {
+    //   address: fraktalNFT.address,
+    //   constructorArguments: [],
+    // });
+    // await hre.run("verify:verify", {
+    //   address: paymentSpliter.address,
+    //   constructorArguments: [],
+    // });
+    // await hre.run("verify:verify", {
+    //   address: fraktalFactory.address,
+    //   constructorArguments: [fraktalNFT.address,paymentSpliter.address],
+    // });
+    // await hre.run("verify:verify", {
+    //   address: fraktalMarket.address,
+    //   constructorArguments: [],
+    // });
 }
 
 main()

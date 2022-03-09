@@ -74,7 +74,7 @@ contract FraktalAirdrop is Pausable, ReentrancyGuard, Ownable {
         require(!hasClaimed[msg.sender], "Airdrop: Already claimed");
 
         uint256 listedAmount = FraktalMarket(payable(fraktalMarket)).getListingAmount(msg.sender,listedToken);
-        (,,uint256 listedAuctionAmount,) = FraktalMarket(payable(fraktalMarket)).auctionListings(listedToken,msg.sender,0);
+        (,,uint256 listedAuctionAmount,,) = FraktalMarket(payable(fraktalMarket)).auctionListings(listedToken,msg.sender,0);
 
         //check if any listing available
         bool isListed = listedAmount > 0 || listedAuctionAmount > 0;

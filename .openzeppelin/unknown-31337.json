@@ -1,20 +1,20 @@
 {
   "manifestVersion": "3.2",
   "admin": {
-    "address": "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
-    "txHash": "0xa55e10469760f461d14b76862d1353b7c37d0404506ad602d293d922924fa93a",
+    "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "txHash": "0x06ab90f2dd54ae1881999f06ab4ed342730787af8dd7d9bd24b235cd4a2bd6c0",
     "deployTransaction": {
-      "hash": "0xa55e10469760f461d14b76862d1353b7c37d0404506ad602d293d922924fa93a",
+      "hash": "0x06ab90f2dd54ae1881999f06ab4ed342730787af8dd7d9bd24b235cd4a2bd6c0",
       "type": 2,
       "accessList": [],
-      "blockHash": "0xb14a968c3fe8bb001f86bc6c8b754b9514fe0f29c218af370da65fe1dff7c79e",
-      "blockNumber": 26,
+      "blockHash": "0x0da43d8128f4ea82d23325e81064ce4dda1b934def58a781f28bbc1518ea3c9e",
+      "blockNumber": 4,
       "transactionIndex": 0,
       "confirmations": 1,
       "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       "gasPrice": {
         "type": "BigNumber",
-        "hex": "0x3e2a54c9"
+        "hex": "0x60b01693"
       },
       "maxPriorityFeePerGas": {
         "type": "BigNumber",
@@ -22,7 +22,7 @@
       },
       "maxFeePerGas": {
         "type": "BigNumber",
-        "hex": "0x40b9df92"
+        "hex": "0x85c56326"
       },
       "gasLimit": {
         "type": "BigNumber",
@@ -35,10 +35,10 @@
       },
       "nonce": 17,
       "data": "0x608060405234801561001057600080fd5b50600080546001600160a01b031916339081178255604051909182917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a350610759806100616000396000f3fe60806040526004361061007b5760003560e01c80639623609d1161004e5780639623609d1461011157806399a88ec414610124578063f2fde38b14610144578063f3b7dead146101645761007b565b8063204e1c7a14610080578063715018a6146100bc5780637eff275e146100d35780638da5cb5b146100f3575b600080fd5b34801561008c57600080fd5b506100a061009b366004610515565b610184565b6040516001600160a01b03909116815260200160405180910390f35b3480156100c857600080fd5b506100d1610215565b005b3480156100df57600080fd5b506100d16100ee366004610554565b610292565b3480156100ff57600080fd5b506000546001600160a01b03166100a0565b6100d161011f36600461058c565b61031c565b34801561013057600080fd5b506100d161013f366004610554565b6103ad565b34801561015057600080fd5b506100d161015f366004610515565b610405565b34801561017057600080fd5b506100a061017f366004610515565b6104ef565b6000806000836001600160a01b03166040516101aa90635c60da1b60e01b815260040190565b600060405180830381855afa9150503d80600081146101e5576040519150601f19603f3d011682016040523d82523d6000602084013e6101ea565b606091505b5091509150816101f957600080fd5b8080602001905181019061020d9190610538565b949350505050565b6000546001600160a01b031633146102485760405162461bcd60e51b815260040161023f906106c0565b60405180910390fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b6000546001600160a01b031633146102bc5760405162461bcd60e51b815260040161023f906106c0565b6040516308f2839760e41b81526001600160a01b038281166004830152831690638f283970906024015b600060405180830381600087803b15801561030057600080fd5b505af1158015610314573d6000803e3d6000fd5b505050505050565b6000546001600160a01b031633146103465760405162461bcd60e51b815260040161023f906106c0565b60405163278f794360e11b81526001600160a01b03841690634f1ef286903490610376908690869060040161065d565b6000604051808303818588803b15801561038f57600080fd5b505af11580156103a3573d6000803e3d6000fd5b5050505050505050565b6000546001600160a01b031633146103d75760405162461bcd60e51b815260040161023f906106c0565b604051631b2ce7f360e11b81526001600160a01b038281166004830152831690633659cfe6906024016102e6565b6000546001600160a01b0316331461042f5760405162461bcd60e51b815260040161023f906106c0565b6001600160a01b0381166104945760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b606482015260840161023f565b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b6000806000836001600160a01b03166040516101aa906303e1469160e61b815260040190565b600060208284031215610526578081fd5b81356105318161070b565b9392505050565b600060208284031215610549578081fd5b81516105318161070b565b60008060408385031215610566578081fd5b82356105718161070b565b915060208301356105818161070b565b809150509250929050565b6000806000606084860312156105a0578081fd5b83356105ab8161070b565b925060208401356105bb8161070b565b9150604084013567ffffffffffffffff808211156105d7578283fd5b818601915086601f8301126105ea578283fd5b8135818111156105fc576105fc6106f5565b604051601f8201601f19908116603f01168101908382118183101715610624576106246106f5565b8160405282815289602084870101111561063c578586fd5b82602086016020830137856020848301015280955050505050509250925092565b600060018060a01b038416825260206040818401528351806040850152825b818110156106985785810183015185820160600152820161067c565b818111156106a95783606083870101525b50601f01601f191692909201606001949350505050565b6020808252818101527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604082015260600190565b634e487b7160e01b600052604160045260246000fd5b6001600160a01b038116811461072057600080fd5b5056fea2646970667358221220d849f96f3086b9f82cdcf665adb8c697ace05638da1c7c16ab2d26293717af6764736f6c63430008020033",
-      "r": "0xabb4b0a89a68f614ab21878264c4ad422249a2f6c442bb2d29e0aa7dba9d99b7",
-      "s": "0x69ec454c2723e675c9fd2ffc53a75d952542eea59123d9bd26a6d62750720986",
-      "v": 1,
-      "creates": "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
+      "r": "0x69c319d0b10ba734301d2db9cb9e8376b12c42059e2e5fd500c9e7db480d2e5f",
+      "s": "0x016132c54cc6a920af600eda5e3355d4290953c28339fd7408dacb56aebb7d5d",
+      "v": 0,
+      "creates": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
       "chainId": 31337
     }
   },
@@ -64,13 +64,23 @@
       "kind": "transparent"
     },
     {
+      "address": "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
+      "txHash": "0x02f225c9c582906edd20dbf6860503d0a5b4559074812d449d0cc73565564abe",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "txHash": "0x3c496cbf370d70c4e9b3c23a6bd20819767c7343fe0f3a380c7f95a1b4b10bc7",
+      "kind": "transparent"
+    },
+    {
       "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-      "txHash": "0x4a5860cda5643b2b2ad5f2cc60bff71f3102a30565f34d93b1eeedd063449aab",
+      "txHash": "0x61d7b7a856fa0cf4b8ee2f2b40cc87ba4d5ed49d016bbe8403093aae828c337d",
       "kind": "transparent"
     },
     {
       "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
-      "txHash": "0xca903e0a35cc395a69aa22ed75a558b65a5947aadf58534ad87c5cd001194e41",
+      "txHash": "0xf534664a4c5ecce9e756be2ede1f87360d55b512e9f2818e91add0c4d9ee5123",
       "kind": "transparent"
     },
     {
@@ -95,9 +105,147 @@
     }
   ],
   "impls": {
-    "352c5a76d59161dffe8172d65e0dd5cbee1f9844718c50485aa12de41262b7ae": {
+    "db0b04f4d1d3a47028794a1782f96ae8c9d13319d202a648994c0995c22a4b0e": {
+      "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "txHash": "0x8f0c677084647246925ec8792698e58346754adf81f01050fc0b5d3f704bb758",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "_status",
+            "type": "t_uint256",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "frakToken",
+            "type": "t_contract(IERC20Upgradeable)1854",
+            "src": "contracts/FeeSharingSystem.sol:23"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "currentRewardPerBlock",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:26"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "lastRewardAdjustment",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:29"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "lastUpdateBlock",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:32"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "periodEndBlock",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:35"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "rewardPerTokenStored",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:38"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "totalShares",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:41"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "userInfo",
+            "type": "t_mapping(t_address,t_struct(UserInfo)10439_storage)",
+            "src": "contracts/FeeSharingSystem.sol:43"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)1854": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_struct(UserInfo)10439_storage)": {
+            "label": "mapping(address => struct FeeSharingSystem.UserInfo)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_struct(UserInfo)10439_storage": {
+            "label": "struct FeeSharingSystem.UserInfo",
+            "members": [
+              {
+                "label": "shares",
+                "type": "t_uint256"
+              },
+              {
+                "label": "userRewardPerTokenPaid",
+                "type": "t_uint256"
+              },
+              {
+                "label": "rewards",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "3f49dc5b32ec07658e7b872a80a69acfff34f8bd7ad35514235a022d5a23ce21": {
       "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "txHash": "0x28709cb164a8b6b98f7bce34a0cd5fc0e9b201cea434d7b89fd598f61dd0c8d1",
+      "txHash": "0x007c4a8c6f5dfb22a4031305b5547b42df7620e3b1dd860b6e3d6af143444638",
       "layout": {
         "storage": [
           {
@@ -169,19 +317,19 @@
           {
             "contract": "FraktalFactory",
             "label": "fraktalNFTs",
-            "type": "t_struct(UintToAddressMap)4043_storage",
+            "type": "t_struct(UintToAddressMap)9036_storage",
             "src": "contracts/FraktalFactory.sol:18"
           },
           {
             "contract": "FraktalFactory",
             "label": "lockedERC721s",
-            "type": "t_mapping(t_address,t_struct(ERC721Imported)4911_storage)",
+            "type": "t_mapping(t_address,t_struct(ERC721Imported)11679_storage)",
             "src": "contracts/FraktalFactory.sol:27"
           },
           {
             "contract": "FraktalFactory",
             "label": "lockedERC1155s",
-            "type": "t_mapping(t_address,t_struct(ERC1155Imported)4916_storage)",
+            "type": "t_mapping(t_address,t_struct(ERC1155Imported)11684_storage)",
             "src": "contracts/FraktalFactory.sol:28"
           }
         ],
@@ -189,21 +337,21 @@
           "t_address": {
             "label": "address"
           },
-          "t_struct(UintToAddressMap)4043_storage": {
+          "t_struct(UintToAddressMap)9036_storage": {
             "label": "struct EnumerableMap.UintToAddressMap",
             "members": [
               {
                 "label": "_inner",
-                "type": "t_struct(Map)3813_storage"
+                "type": "t_struct(Map)8806_storage"
               }
             ]
           },
-          "t_struct(Map)3813_storage": {
+          "t_struct(Map)8806_storage": {
             "label": "struct EnumerableMap.Map",
             "members": [
               {
                 "label": "_keys",
-                "type": "t_struct(Bytes32Set)4482_storage"
+                "type": "t_struct(Bytes32Set)9475_storage"
               },
               {
                 "label": "_values",
@@ -211,12 +359,12 @@
               }
             ]
           },
-          "t_struct(Bytes32Set)4482_storage": {
+          "t_struct(Bytes32Set)9475_storage": {
             "label": "struct EnumerableSet.Bytes32Set",
             "members": [
               {
                 "label": "_inner",
-                "type": "t_struct(Set)4288_storage"
+                "type": "t_struct(Set)9281_storage"
               }
             ]
           },
@@ -226,7 +374,7 @@
           "t_bytes32": {
             "label": "bytes32"
           },
-          "t_struct(Set)4288_storage": {
+          "t_struct(Set)9281_storage": {
             "label": "struct EnumerableSet.Set",
             "members": [
               {
@@ -248,10 +396,10 @@
           "t_uint256": {
             "label": "uint256"
           },
-          "t_mapping(t_address,t_struct(ERC721Imported)4911_storage)": {
+          "t_mapping(t_address,t_struct(ERC721Imported)11679_storage)": {
             "label": "mapping(address => struct FraktalFactory.ERC721Imported)"
           },
-          "t_struct(ERC721Imported)4911_storage": {
+          "t_struct(ERC721Imported)11679_storage": {
             "label": "struct FraktalFactory.ERC721Imported",
             "members": [
               {
@@ -264,10 +412,10 @@
               }
             ]
           },
-          "t_mapping(t_address,t_struct(ERC1155Imported)4916_storage)": {
+          "t_mapping(t_address,t_struct(ERC1155Imported)11684_storage)": {
             "label": "mapping(address => struct FraktalFactory.ERC1155Imported)"
           },
-          "t_struct(ERC1155Imported)4916_storage": {
+          "t_struct(ERC1155Imported)11684_storage": {
             "label": "struct FraktalFactory.ERC1155Imported",
             "members": [
               {
@@ -292,9 +440,9 @@
         }
       }
     },
-    "0c056b88b92560b14b8cfcba3ce571eeb7b1fc6058fe5a01b6c9540ddeb2e891": {
+    "52e657c0d7f415fe8d7184fada339b47eeecbd8935de77af4e8158f28ef5f631": {
       "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0x00a82a7a8d151cf67aea7dc66da7f948f52361d6c0c91ee174a1c264fa635e94",
+      "txHash": "0xccca2d5f3b64d03a3231d1355487c47b15f0cd2eca7d7c65a8aaeb9d41757f2f",
       "layout": {
         "storage": [
           {
@@ -343,73 +491,73 @@
             "contract": "FraktalMarket",
             "label": "fee",
             "type": "t_uint16",
-            "src": "contracts/FraktalMarket.sol:21"
+            "src": "contracts/FraktalMarket.sol:20"
           },
           {
             "contract": "FraktalMarket",
             "label": "listingFee",
             "type": "t_uint256",
-            "src": "contracts/FraktalMarket.sol:22"
+            "src": "contracts/FraktalMarket.sol:21"
           },
           {
             "contract": "FraktalMarket",
             "label": "feesAccrued",
             "type": "t_uint256",
-            "src": "contracts/FraktalMarket.sol:23"
+            "src": "contracts/FraktalMarket.sol:22"
           },
           {
             "contract": "FraktalMarket",
             "label": "listings",
-            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(Listing)5700_storage))",
-            "src": "contracts/FraktalMarket.sol:39"
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(Listing)12473_storage))",
+            "src": "contracts/FraktalMarket.sol:40"
           },
           {
             "contract": "FraktalMarket",
             "label": "auctionListings",
-            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)5709_storage)))",
-            "src": "contracts/FraktalMarket.sol:41"
+            "type": "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)12484_storage)))",
+            "src": "contracts/FraktalMarket.sol:42"
           },
           {
             "contract": "FraktalMarket",
             "label": "auctionNonce",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/FraktalMarket.sol:42"
+            "src": "contracts/FraktalMarket.sol:43"
           },
           {
             "contract": "FraktalMarket",
             "label": "auctionReserve",
             "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
-            "src": "contracts/FraktalMarket.sol:43"
+            "src": "contracts/FraktalMarket.sol:44"
           },
           {
             "contract": "FraktalMarket",
             "label": "auctionSellerRedeemed",
             "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))",
-            "src": "contracts/FraktalMarket.sol:44"
+            "src": "contracts/FraktalMarket.sol:45"
           },
           {
             "contract": "FraktalMarket",
             "label": "participantContribution",
             "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_uint256)))",
-            "src": "contracts/FraktalMarket.sol:46"
+            "src": "contracts/FraktalMarket.sol:47"
           },
           {
             "contract": "FraktalMarket",
             "label": "offers",
-            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(Proposal)5693_storage))",
-            "src": "contracts/FraktalMarket.sol:48"
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(Proposal)12464_storage))",
+            "src": "contracts/FraktalMarket.sol:49"
           },
           {
             "contract": "FraktalMarket",
             "label": "sellersBalance",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/FraktalMarket.sol:49"
+            "src": "contracts/FraktalMarket.sol:50"
           },
           {
             "contract": "FraktalMarket",
             "label": "maxPriceRegistered",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/FraktalMarket.sol:50"
+            "src": "contracts/FraktalMarket.sol:51"
           }
         ],
         "types": {
@@ -419,16 +567,16 @@
           "t_uint256": {
             "label": "uint256"
           },
-          "t_mapping(t_address,t_mapping(t_address,t_struct(Listing)5700_storage))": {
+          "t_mapping(t_address,t_mapping(t_address,t_struct(Listing)12473_storage))": {
             "label": "mapping(address => mapping(address => struct FraktalMarket.Listing))"
           },
           "t_address": {
             "label": "address"
           },
-          "t_mapping(t_address,t_struct(Listing)5700_storage)": {
+          "t_mapping(t_address,t_struct(Listing)12473_storage)": {
             "label": "mapping(address => struct FraktalMarket.Listing)"
           },
-          "t_struct(Listing)5700_storage": {
+          "t_struct(Listing)12473_storage": {
             "label": "struct FraktalMarket.Listing",
             "members": [
               {
@@ -442,19 +590,26 @@
               {
                 "label": "numberOfShares",
                 "type": "t_uint256"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage"
               }
             ]
           },
-          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)5709_storage)))": {
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)12484_storage)))": {
             "label": "mapping(address => mapping(address => mapping(uint256 => struct FraktalMarket.AuctionListing)))"
           },
-          "t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)5709_storage))": {
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(AuctionListing)12484_storage))": {
             "label": "mapping(address => mapping(uint256 => struct FraktalMarket.AuctionListing))"
           },
-          "t_mapping(t_uint256,t_struct(AuctionListing)5709_storage)": {
+          "t_mapping(t_uint256,t_struct(AuctionListing)12484_storage)": {
             "label": "mapping(uint256 => struct FraktalMarket.AuctionListing)"
           },
-          "t_struct(AuctionListing)5709_storage": {
+          "t_struct(AuctionListing)12484_storage": {
             "label": "struct FraktalMarket.AuctionListing",
             "members": [
               {
@@ -472,6 +627,10 @@
               {
                 "label": "auctionEndTime",
                 "type": "t_uint256"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage"
               }
             ]
           },
@@ -499,13 +658,13 @@
           "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
             "label": "mapping(uint256 => mapping(address => uint256))"
           },
-          "t_mapping(t_address,t_mapping(t_address,t_struct(Proposal)5693_storage))": {
+          "t_mapping(t_address,t_mapping(t_address,t_struct(Proposal)12464_storage))": {
             "label": "mapping(address => mapping(address => struct FraktalMarket.Proposal))"
           },
-          "t_mapping(t_address,t_struct(Proposal)5693_storage)": {
+          "t_mapping(t_address,t_struct(Proposal)12464_storage)": {
             "label": "mapping(address => struct FraktalMarket.Proposal)"
           },
-          "t_struct(Proposal)5693_storage": {
+          "t_struct(Proposal)12464_storage": {
             "label": "struct FraktalMarket.Proposal",
             "members": [
               {
