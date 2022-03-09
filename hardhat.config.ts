@@ -4,6 +4,8 @@ import 'hardhat-deploy';
 import "@nomiclabs/hardhat-ethers"
 import "@nomiclabs/hardhat-etherscan";
 import '@openzeppelin/hardhat-upgrades';
+import "@nomiclabs/hardhat-web3";
+
 import { task } from "hardhat/config";
 
 import * as dotenv from 'dotenv'
