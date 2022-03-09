@@ -1,13 +1,18 @@
-require("@nomiclabs/hardhat-waffle");
-require('hardhat-contract-sizer');
-require('hardhat-deploy');
-require("@nomiclabs/hardhat-ethers")
-require("@nomiclabs/hardhat-etherscan");
-require('@openzeppelin/hardhat-upgrades');
-require('dotenv').config()
+import "@nomiclabs/hardhat-waffle";
+import 'hardhat-contract-sizer';
+import 'hardhat-deploy';
+import "@nomiclabs/hardhat-ethers"
+import "@nomiclabs/hardhat-etherscan";
+import '@openzeppelin/hardhat-upgrades';
+import "@nomiclabs/hardhat-web3";
+
+import { task } from "hardhat/config";
+
+import * as dotenv from 'dotenv'
+dotenv.config()
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
+task("accounts", "Prints the list of accounts", async (taskArgs, hre: any) => {
   const accounts = await hre.ethers.getSigners();
 
   for (const account of accounts) {
