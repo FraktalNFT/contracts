@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+/***
+ *     _______  ______ _______ _     _ _______ _______       
+ *     |______ |_____/ |_____| |____/     |    |_____| |     
+ *     |       |    \_ |     | |    \_    |    |     | |_____
+ *                                                           
+ */
+
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";

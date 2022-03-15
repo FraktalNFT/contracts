@@ -1,28 +1,28 @@
 {
   "manifestVersion": "3.2",
   "admin": {
-    "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-    "txHash": "0x06ab90f2dd54ae1881999f06ab4ed342730787af8dd7d9bd24b235cd4a2bd6c0",
+    "address": "0xfA4b3c3A375ED28E830c7309b9B7d3057373cb32",
+    "txHash": "0x15777aaf4323f05a54391e5aed6dd3f851655fca1b3b811091742d788a2ed67a",
     "deployTransaction": {
-      "hash": "0x06ab90f2dd54ae1881999f06ab4ed342730787af8dd7d9bd24b235cd4a2bd6c0",
+      "hash": "0x15777aaf4323f05a54391e5aed6dd3f851655fca1b3b811091742d788a2ed67a",
       "type": 2,
       "accessList": [],
-      "blockHash": "0x93f69707805bdac535f054f59c4e3b7fb1a55df236a75368ed00ddf597bd86a1",
-      "blockNumber": 4,
-      "transactionIndex": 0,
-      "confirmations": 1,
-      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "blockHash": null,
+      "blockNumber": null,
+      "transactionIndex": null,
+      "confirmations": 0,
+      "from": "0x101Abf65Bea7d6f19E7E539967424e6e90b7bDB7",
       "gasPrice": {
         "type": "BigNumber",
-        "hex": "0x60b01693"
+        "hex": "0x04b7b79d89"
       },
       "maxPriorityFeePerGas": {
         "type": "BigNumber",
-        "hex": "0x3b9aca00"
+        "hex": "0x59682f00"
       },
       "maxFeePerGas": {
         "type": "BigNumber",
-        "hex": "0x85c56326"
+        "hex": "0x04b7b79d89"
       },
       "gasLimit": {
         "type": "BigNumber",
@@ -33,219 +33,36 @@
         "type": "BigNumber",
         "hex": "0x00"
       },
-      "nonce": 3,
+      "nonce": 5,
       "data": "0x608060405234801561001057600080fd5b50600080546001600160a01b031916339081178255604051909182917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a350610759806100616000396000f3fe60806040526004361061007b5760003560e01c80639623609d1161004e5780639623609d1461011157806399a88ec414610124578063f2fde38b14610144578063f3b7dead146101645761007b565b8063204e1c7a14610080578063715018a6146100bc5780637eff275e146100d35780638da5cb5b146100f3575b600080fd5b34801561008c57600080fd5b506100a061009b366004610515565b610184565b6040516001600160a01b03909116815260200160405180910390f35b3480156100c857600080fd5b506100d1610215565b005b3480156100df57600080fd5b506100d16100ee366004610554565b610292565b3480156100ff57600080fd5b506000546001600160a01b03166100a0565b6100d161011f36600461058c565b61031c565b34801561013057600080fd5b506100d161013f366004610554565b6103ad565b34801561015057600080fd5b506100d161015f366004610515565b610405565b34801561017057600080fd5b506100a061017f366004610515565b6104ef565b6000806000836001600160a01b03166040516101aa90635c60da1b60e01b815260040190565b600060405180830381855afa9150503d80600081146101e5576040519150601f19603f3d011682016040523d82523d6000602084013e6101ea565b606091505b5091509150816101f957600080fd5b8080602001905181019061020d9190610538565b949350505050565b6000546001600160a01b031633146102485760405162461bcd60e51b815260040161023f906106c0565b60405180910390fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b6000546001600160a01b031633146102bc5760405162461bcd60e51b815260040161023f906106c0565b6040516308f2839760e41b81526001600160a01b038281166004830152831690638f283970906024015b600060405180830381600087803b15801561030057600080fd5b505af1158015610314573d6000803e3d6000fd5b505050505050565b6000546001600160a01b031633146103465760405162461bcd60e51b815260040161023f906106c0565b60405163278f794360e11b81526001600160a01b03841690634f1ef286903490610376908690869060040161065d565b6000604051808303818588803b15801561038f57600080fd5b505af11580156103a3573d6000803e3d6000fd5b5050505050505050565b6000546001600160a01b031633146103d75760405162461bcd60e51b815260040161023f906106c0565b604051631b2ce7f360e11b81526001600160a01b038281166004830152831690633659cfe6906024016102e6565b6000546001600160a01b0316331461042f5760405162461bcd60e51b815260040161023f906106c0565b6001600160a01b0381166104945760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b606482015260840161023f565b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b6000806000836001600160a01b03166040516101aa906303e1469160e61b815260040190565b600060208284031215610526578081fd5b81356105318161070b565b9392505050565b600060208284031215610549578081fd5b81516105318161070b565b60008060408385031215610566578081fd5b82356105718161070b565b915060208301356105818161070b565b809150509250929050565b6000806000606084860312156105a0578081fd5b83356105ab8161070b565b925060208401356105bb8161070b565b9150604084013567ffffffffffffffff808211156105d7578283fd5b818601915086601f8301126105ea578283fd5b8135818111156105fc576105fc6106f5565b604051601f8201601f19908116603f01168101908382118183101715610624576106246106f5565b8160405282815289602084870101111561063c578586fd5b82602086016020830137856020848301015280955050505050509250925092565b600060018060a01b038416825260206040818401528351806040850152825b818110156106985785810183015185820160600152820161067c565b818111156106a95783606083870101525b50601f01601f191692909201606001949350505050565b6020808252818101527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604082015260600190565b634e487b7160e01b600052604160045260246000fd5b6001600160a01b038116811461072057600080fd5b5056fea2646970667358221220d849f96f3086b9f82cdcf665adb8c697ace05638da1c7c16ab2d26293717af6764736f6c63430008020033",
-      "r": "0x69c319d0b10ba734301d2db9cb9e8376b12c42059e2e5fd500c9e7db480d2e5f",
-      "s": "0x016132c54cc6a920af600eda5e3355d4290953c28339fd7408dacb56aebb7d5d",
-      "v": 0,
-      "creates": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-      "chainId": 31337
+      "r": "0xaf9da3d38f7793b4b2aa98418e89346902313432deeb8409489f41cf2b4ce8f3",
+      "s": "0x5055ceed17cc345ba1696c34eafa50f9426018a2a897ec4c114eefb14b3952c6",
+      "v": 1,
+      "creates": "0xfA4b3c3A375ED28E830c7309b9B7d3057373cb32",
+      "chainId": 1
     }
   },
   "proxies": [
     {
-      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "txHash": "0x32bc7d14a47df8fe13432091f3fc0aeb56fee0865f8788bae768c5bb57af3adc",
+      "address": "0x5DF977d385254D9a66ab8cD35e87E1E0c419b135",
+      "txHash": "0x27a29d0ebe2c8b1f71925fbabef789f23ce663567bfe7e0ec36907d613665678",
       "kind": "transparent"
     },
     {
-      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0x73a61c2e5196136596171b0b993b90daf733ea71b2a7828665d6bcbeb888f8a7",
+      "address": "0x244763Ea2039D880B62D2BA427d8919Eba6ee50B",
+      "txHash": "0x7cc2fcfb07af5de7bac50a4fd3488aadef0f3ef9ac27cc4cf7e0119ad5c3b22d",
       "kind": "transparent"
     },
     {
-      "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
-      "txHash": "0xe7cfc1c0702e79b3fb9f6fe50b111c4f0a02f7881b00c449d150f4e11ac85e26",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
-      "txHash": "0x9701f3772d38767317bd8fab23535618c5c9566cfee079e5b57a46677ddde657",
-      "kind": "transparent"
-    },
-    {
-      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-      "txHash": "0x3c496cbf370d70c4e9b3c23a6bd20819767c7343fe0f3a380c7f95a1b4b10bc7",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
-      "txHash": "0x7be06fa95730dfac41ad9379a46a8e9c9731058ee704fce44e5ca92ba59155e8",
-      "kind": "transparent"
-    },
-    {
-      "address": "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
-      "txHash": "0x6631c61c99f651ecf0d39bc7fd70a4885775b580b82f36a9b1dc9f08a293ca95",
-      "kind": "transparent"
-    },
-    {
-      "address": "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
-      "txHash": "0x14c2afaf3ec77744d69f452c249d7906f8a44d5df7489d1e59e9e7d6e91b11c6",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x8f86403A4DE0BB5791fa46B8e795C547942fE4Cf",
-      "txHash": "0xd42fc510c15654bd556a94e34f04e51451aee741a68e8e8ffa621345bd16a66c",
-      "kind": "transparent"
-    },
-    {
-      "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-      "txHash": "0x61d7b7a856fa0cf4b8ee2f2b40cc87ba4d5ed49d016bbe8403093aae828c337d",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
-      "txHash": "0x217669950ce464a06e0076ffc356d08eb2480ad7c3b2deca5c5d55e54783adae",
-      "kind": "transparent"
-    },
-    {
-      "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-      "txHash": "0xdfa44094eeb5dc934823e54f027740cdb9c22313c9d55e5668ea3211ad3bd2dc",
+      "address": "0xa74a87Da1E4c6f3a742D3e4DDe6750a957Ca3aC3",
+      "txHash": "0x1f77f49739482bd6cb9fcce43c4750ce53d0f369c1422e78db2cfdd746758d3c",
       "kind": "transparent"
     }
   ],
   "impls": {
-    "db0b04f4d1d3a47028794a1782f96ae8c9d13319d202a648994c0995c22a4b0e": {
-      "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
-      "txHash": "0x75f082712df090d58c0a104ce58bc9f6b5e655a6ebf9fbe77f0c57de4fb66e2f",
-      "layout": {
-        "storage": [
-          {
-            "contract": "Initializable",
-            "label": "_initialized",
-            "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
-          },
-          {
-            "contract": "Initializable",
-            "label": "_initializing",
-            "type": "t_bool",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
-          },
-          {
-            "contract": "ReentrancyGuardUpgradeable",
-            "label": "_status",
-            "type": "t_uint256",
-            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
-          },
-          {
-            "contract": "ReentrancyGuardUpgradeable",
-            "label": "__gap",
-            "type": "t_array(t_uint256)49_storage",
-            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
-          },
-          {
-            "contract": "ContextUpgradeable",
-            "label": "__gap",
-            "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
-          },
-          {
-            "contract": "OwnableUpgradeable",
-            "label": "_owner",
-            "type": "t_address",
-            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
-          },
-          {
-            "contract": "OwnableUpgradeable",
-            "label": "__gap",
-            "type": "t_array(t_uint256)49_storage",
-            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
-          },
-          {
-            "contract": "FeeSharingSystem",
-            "label": "frakToken",
-            "type": "t_contract(IERC20Upgradeable)335",
-            "src": "contracts/FeeSharingSystem.sol:23"
-          },
-          {
-            "contract": "FeeSharingSystem",
-            "label": "currentRewardPerBlock",
-            "type": "t_uint256",
-            "src": "contracts/FeeSharingSystem.sol:26"
-          },
-          {
-            "contract": "FeeSharingSystem",
-            "label": "lastRewardAdjustment",
-            "type": "t_uint256",
-            "src": "contracts/FeeSharingSystem.sol:29"
-          },
-          {
-            "contract": "FeeSharingSystem",
-            "label": "lastUpdateBlock",
-            "type": "t_uint256",
-            "src": "contracts/FeeSharingSystem.sol:32"
-          },
-          {
-            "contract": "FeeSharingSystem",
-            "label": "periodEndBlock",
-            "type": "t_uint256",
-            "src": "contracts/FeeSharingSystem.sol:35"
-          },
-          {
-            "contract": "FeeSharingSystem",
-            "label": "rewardPerTokenStored",
-            "type": "t_uint256",
-            "src": "contracts/FeeSharingSystem.sol:38"
-          },
-          {
-            "contract": "FeeSharingSystem",
-            "label": "totalShares",
-            "type": "t_uint256",
-            "src": "contracts/FeeSharingSystem.sol:41"
-          },
-          {
-            "contract": "FeeSharingSystem",
-            "label": "userInfo",
-            "type": "t_mapping(t_address,t_struct(UserInfo)876_storage)",
-            "src": "contracts/FeeSharingSystem.sol:43"
-          }
-        ],
-        "types": {
-          "t_contract(IERC20Upgradeable)335": {
-            "label": "contract IERC20Upgradeable"
-          },
-          "t_uint256": {
-            "label": "uint256"
-          },
-          "t_mapping(t_address,t_struct(UserInfo)876_storage)": {
-            "label": "mapping(address => struct FeeSharingSystem.UserInfo)"
-          },
-          "t_address": {
-            "label": "address"
-          },
-          "t_struct(UserInfo)876_storage": {
-            "label": "struct FeeSharingSystem.UserInfo",
-            "members": [
-              {
-                "label": "shares",
-                "type": "t_uint256"
-              },
-              {
-                "label": "userRewardPerTokenPaid",
-                "type": "t_uint256"
-              },
-              {
-                "label": "rewards",
-                "type": "t_uint256"
-              }
-            ]
-          },
-          "t_array(t_uint256)49_storage": {
-            "label": "uint256[49]"
-          },
-          "t_array(t_uint256)50_storage": {
-            "label": "uint256[50]"
-          },
-          "t_bool": {
-            "label": "bool"
-          }
-        }
-      }
-    },
     "3f49dc5b32ec07658e7b872a80a69acfff34f8bd7ad35514235a022d5a23ce21": {
-      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "txHash": "0x08650f5842a20f502cc414bf1b67b90707bdcc217e22d1012980f24c31ff25d1",
+      "address": "0x9e7F9d3638Fe2EFda02672B22F3c09238fFa63Ca",
+      "txHash": "0x75756f10d22a9ac656aed26fc6c848981168b88c8f57c8b4be6750141832772e",
       "layout": {
         "storage": [
           {
@@ -441,8 +258,8 @@
       }
     },
     "abe9120fa0973fadff716b609fc7acce1b5246ec6eb2c891e75754def44472ad": {
-      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0xcb46515754f9c4b7b7fc27c6cf5e2c8b9372205536e3352790d5acee89b4a3b3",
+      "address": "0x583414B844Ecc120E4AcaBC952aD73E8FB331F5c",
+      "txHash": "0x9df78710eedbffe423b0a2ce5e571ab5a8a9231c2bc6cade4a3c6c8e4a440d8f",
       "layout": {
         "storage": [
           {
@@ -682,6 +499,144 @@
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "db0b04f4d1d3a47028794a1782f96ae8c9d13319d202a648994c0995c22a4b0e": {
+      "address": "0x1Cc3830FAA8fCa86D7Bd20E3d1E8C5FDf2a9D0F4",
+      "txHash": "0x15190c29a2175792a8d6c86a9872eb805dac39ddbbc3fa1579e6451afac04054",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "_status",
+            "type": "t_uint256",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:68"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "frakToken",
+            "type": "t_contract(IERC20Upgradeable)335",
+            "src": "contracts/FeeSharingSystem.sol:23"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "currentRewardPerBlock",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:26"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "lastRewardAdjustment",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:29"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "lastUpdateBlock",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:32"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "periodEndBlock",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:35"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "rewardPerTokenStored",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:38"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "totalShares",
+            "type": "t_uint256",
+            "src": "contracts/FeeSharingSystem.sol:41"
+          },
+          {
+            "contract": "FeeSharingSystem",
+            "label": "userInfo",
+            "type": "t_mapping(t_address,t_struct(UserInfo)876_storage)",
+            "src": "contracts/FeeSharingSystem.sol:43"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)335": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_struct(UserInfo)876_storage)": {
+            "label": "mapping(address => struct FeeSharingSystem.UserInfo)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_struct(UserInfo)876_storage": {
+            "label": "struct FeeSharingSystem.UserInfo",
+            "members": [
+              {
+                "label": "shares",
+                "type": "t_uint256"
+              },
+              {
+                "label": "userRewardPerTokenPaid",
+                "type": "t_uint256"
+              },
+              {
+                "label": "rewards",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         }
       }
