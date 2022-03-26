@@ -52,7 +52,7 @@ contract FeeSharingSetter is ReentrancyGuard, AccessControl {
     event NewRewardConvertor(address rewardConvertor);
 
     constructor(
-        address payable _feeSharingSystem,
+        address _feeSharingSystem,
         uint256 _minRewardDurationInBlocks,
         uint256 _maxRewardDurationInBlocks,
         uint256 _rewardDurationInBlocks
@@ -66,7 +66,7 @@ contract FeeSharingSetter is ReentrancyGuard, AccessControl {
         MIN_REWARD_DURATION_IN_BLOCKS = _minRewardDurationInBlocks;
         MAX_REWARD_DURATION_IN_BLOCKS = _maxRewardDurationInBlocks;
 
-        feeSharingSystem = FeeSharingSystem(_feeSharingSystem);
+        feeSharingSystem = FeeSharingSystem(payable(_feeSharingSystem));
 
         // rewardToken = feeSharingSystem.rewardToken();
         frakToken = feeSharingSystem.frakToken();
