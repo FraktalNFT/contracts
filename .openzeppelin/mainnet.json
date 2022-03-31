@@ -640,6 +640,203 @@
           }
         }
       }
+    },
+    "abdf92094f4a56d809602c12d966bdd9772000aa77850a54a4cf725f5149f4e1": {
+      "address": "0x00B3443339Ad09253925404A3385823c2CB9D2bD",
+      "txHash": "0xb892d50b3064007f3a0d8c286de8ae71a0708007bafd9c78359513d144176180",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:36"
+          },
+          {
+            "contract": "ERC1155ReceiverUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155ReceiverUpgradeable.sol:27"
+          },
+          {
+            "contract": "ERC1155HolderUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol:40"
+          },
+          {
+            "contract": "ERC721HolderUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol:35"
+          },
+          {
+            "contract": "FraktalFactoryV2",
+            "label": "Fraktalimplementation",
+            "type": "t_address",
+            "src": "contracts/FraktalFactoryV2.sol:16"
+          },
+          {
+            "contract": "FraktalFactoryV2",
+            "label": "revenueChannelImplementation",
+            "type": "t_address",
+            "src": "contracts/FraktalFactoryV2.sol:17"
+          },
+          {
+            "contract": "FraktalFactoryV2",
+            "label": "fraktalNFTs",
+            "type": "t_struct(UintToAddressMap)9036_storage",
+            "src": "contracts/FraktalFactoryV2.sol:18"
+          },
+          {
+            "contract": "FraktalFactoryV2",
+            "label": "lockedERC721s",
+            "type": "t_mapping(t_address,t_struct(ERC721Imported)12473_storage)",
+            "src": "contracts/FraktalFactoryV2.sol:27"
+          },
+          {
+            "contract": "FraktalFactoryV2",
+            "label": "lockedERC1155s",
+            "type": "t_mapping(t_address,t_struct(ERC1155Imported)12478_storage)",
+            "src": "contracts/FraktalFactoryV2.sol:28"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_struct(UintToAddressMap)9036_storage": {
+            "label": "struct EnumerableMap.UintToAddressMap",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Map)8806_storage"
+              }
+            ]
+          },
+          "t_struct(Map)8806_storage": {
+            "label": "struct EnumerableMap.Map",
+            "members": [
+              {
+                "label": "_keys",
+                "type": "t_struct(Bytes32Set)9475_storage"
+              },
+              {
+                "label": "_values",
+                "type": "t_mapping(t_bytes32,t_bytes32)"
+              }
+            ]
+          },
+          "t_struct(Bytes32Set)9475_storage": {
+            "label": "struct EnumerableSet.Bytes32Set",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)9281_storage"
+              }
+            ]
+          },
+          "t_mapping(t_bytes32,t_bytes32)": {
+            "label": "mapping(bytes32 => bytes32)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(Set)9281_storage": {
+            "label": "struct EnumerableSet.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_struct(ERC721Imported)12473_storage)": {
+            "label": "mapping(address => struct FraktalFactoryV2.ERC721Imported)"
+          },
+          "t_struct(ERC721Imported)12473_storage": {
+            "label": "struct FraktalFactoryV2.ERC721Imported",
+            "members": [
+              {
+                "label": "tokenAddress",
+                "type": "t_address"
+              },
+              {
+                "label": "tokenIndex",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_struct(ERC1155Imported)12478_storage)": {
+            "label": "mapping(address => struct FraktalFactoryV2.ERC1155Imported)"
+          },
+          "t_struct(ERC1155Imported)12478_storage": {
+            "label": "struct FraktalFactoryV2.ERC1155Imported",
+            "members": [
+              {
+                "label": "tokenAddress",
+                "type": "t_address"
+              },
+              {
+                "label": "tokenIndex",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
     }
   }
 }
