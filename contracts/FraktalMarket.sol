@@ -86,6 +86,7 @@ ERC1155Holder
   event AdminWithdrawFees(uint256 feesAccrued);
   event OfferMade(address offerer, address tokenAddress, uint256 value);
   event OfferVoted(address voter, address offerer, address tokenAddress, bool sold);
+  event Volume(address user, uint256 volume);
 
   function initialize() public initializer {
     __Ownable_init();
@@ -151,6 +152,7 @@ ERC1155Holder
 
       (bool sent,) = _msgSender().call{value: totalForSeller}("");
       auctionSellerRedeemed[_seller][_sellerNonce] = true;
+      emit Volume(_msgSender(),totalForSeller);
       require(sent);//check if ether failed to send
     }
 
@@ -186,6 +188,8 @@ ERC1155Holder
       uint256 _participantContribution = participantContribution[_seller][_sellerNonce][_msgSender()];
       uint256 eligibleFrak = (_participantContribution * auctionFraks) / _auctionReserve;
       participantContribution[_seller][_sellerNonce][_msgSender()] = 0;
+
+      emit Volume(_msgSender(),_participantContribution);
 
       FraktalNFT(_tokenAddress).safeTransferFrom(
       address(this),
@@ -257,6 +261,8 @@ ERC1155Holder
       ""
     );
     emit Bought(_msgSender(), from, tokenAddress, _numberOfShares);
+    emit Volume(_msgSender(),msg.value);
+    emit Volume(from,msg.value);
   }
 
   function participateAuction(
